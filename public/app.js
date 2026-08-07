@@ -1,2 +1,31 @@
-(()=>{const qs=new URLSearchParams(location.search);const t=qs.get('theme')||((matchMedia('(prefers-color-scheme:dark)').matches)?'dark':'light');document.documentElement.dataset.theme=t;document.querySelector('meta[name=theme-color]').content=t==='dark'?'#020b1b':'#f8fbff';const form=document.getElementById('search'),input=document.getElementById('tracking'),ref=document.getElementById('resultRef'),found=document.getElementById('found');const ok=/^TTG-(RCP|INV|DOC|QTE|TXN)-0*60$/;form.addEventListener('submit',e=>{e.preventDefault();const id=input.value.trim().toUpperCase();ref.textContent=id||'—';if(ok.test(id)){found.textContent='Found';found.style.background='';found.style.color='';document.getElementById('resultArea').scrollIntoView({behavior:'smooth'})}else{found.textContent='Not found';found.style.background='rgba(239,68,68,.13)';found.style.color='#ef4444'}});if(innerWidth<601){requestAnimationFrame(()=>{const s=document.getElementById('steps'),c=document.querySelector('.step.current');if(s&&c)s.scrollLeft=Math.max(0,c.offsetLeft-(s.clientWidth-c.clientWidth)/2)})}})();
-function toggle(id,force){const p=document.getElementById(id),open=typeof force==='boolean'?force:!p.classList.contains('open');p.classList.toggle('open',open)}
+(()=>{
+  const form=document.getElementById('searchForm');
+  const input=document.getElementById('trackingInput');
+  const ref=document.getElementById('resultRef');
+  const badge=document.getElementById('foundBadge');
+  const ok=/^TTG-(RCP|INV|DOC|QTE|TXN)-0*60$/i;
+  form.addEventListener('submit',e=>{
+    e.preventDefault();
+    const id=input.value.trim().toUpperCase();
+    ref.textContent=id||'—';
+    if(ok.test(id)){
+      badge.textContent='Found';badge.classList.remove('bad');
+      document.getElementById('resultArea').scrollIntoView({behavior:'smooth',block:'start'});
+    }else{
+      badge.textContent='Not found';badge.classList.add('bad');
+    }
+  });
+  const centerCurrent=()=>{
+    if(innerWidth<=900){
+      const s=document.getElementById('steps'),c=s?.querySelector('.current');
+      if(s&&c)s.scrollLeft=Math.max(0,c.offsetLeft-(s.clientWidth-c.clientWidth)/2);
+    }
+  };
+  requestAnimationFrame(centerCurrent);
+  window.addEventListener('resize',centerCurrent,{passive:true});
+})();
+function togglePanel(id,force){
+  const el=document.getElementById(id);if(!el)return;
+  const open=typeof force==='boolean'?force:!el.classList.contains('open');
+  el.classList.toggle('open',open);
+}
