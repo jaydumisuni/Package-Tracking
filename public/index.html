@@ -3,41 +3,126 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f8fbff">
+<meta name="theme-color" content="#f7faff">
+<meta name="ttg-build" content="2026-08-08-mobile-box-fix">
 <title>THETECHGUY Tracking</title>
-<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/styles.css?v=20260808b">
 </head>
 <body>
-<header class="top">
-<button class="mobile-menu" aria-label="Menu">☰</button>
-<a class="brand" href="https://thetechguyds.com"><img src="https://thetechguyds.com/assets/ttg-asset-002-8f95ed29fe9a.png" alt="THETECHGUY DIGITAL SOLUTIONS"></a>
-<nav class="nav"><a class="active" href="#track">⌕ Track</a><a href="https://thetechguyds.com/#services">🛠 Services⌄</a><a href="#how">ⓘ How It Works</a><a href="https://thetechguyds.com/#support">◉ Support</a><a href="https://thetechguyds.com/#about">◇ About TTG</a></nav>
-<button class="portal-btn" onclick="toggle('portal')">👤 Client Portal</button>
+<header class="topbar">
+  <button class="hamburger" type="button" aria-label="Open menu">☰</button>
+  <a class="brand" href="https://thetechguyds.com" aria-label="THETECHGUY DIGITAL SOLUTIONS"><img src="https://thetechguyds.com/assets/ttg-asset-002-8f95ed29fe9a.png" alt="THETECHGUY DIGITAL SOLUTIONS"></a>
+  <nav class="nav" aria-label="Main navigation">
+    <a class="active" href="#track">⌕ Track</a>
+    <a href="https://thetechguyds.com/#services">🛠 Services⌄</a>
+    <a href="#how">ⓘ How It Works</a>
+    <a href="https://thetechguyds.com/#support">◉ Support</a>
+    <a href="https://thetechguyds.com/#about">◇ About TTG</a>
+  </nav>
+  <button class="portal-btn" type="button" onclick="togglePanel('portal')">👤 <span>Client Portal</span></button>
 </header>
-<main class="wrap" id="track">
-<section class="hero">
-<div class="box-art"><div class="box"><div class="box-label"></div></div></div>
-<div><h1>Track your <span>gadget, parcel or order</span></h1><p>Enter your TTG receipt, invoice, disclaimer, quote or master tracking ID<br>to view real-time updates on your job.</p>
-<form class="search" id="search"><label>⌕ <input id="tracking" value="TTG-RCP-000060" aria-label="Tracking ID"></label><button class="track-btn">Track &nbsp;→</button></form>
-<div class="hint">Use any TTG receipt, invoice, disclaimer, quote, or tracking ID.</div><div class="chips"><b class="chip">Examples:</b><span class="chip">Receipt · TTG-RCP-000060</span><span class="chip">Invoice · TTG-INV-000060</span><span class="chip">Disclaimer · TTG-DOC-000060</span><span class="chip">Quote · TTG-QTE-000060</span><span class="chip">Master · TTG-TXN-000060</span></div></div>
-<div class="card estimates"><div class="title">🚚 &nbsp;Delivery / Transit Estimates</div><div class="estimate"><b>🇺🇸 USA parcels</b><span class="mid">Usually about</span><span class="eta">21 working days</span></div><div class="estimate"><b>🇬🇧 UK parcels</b><span class="mid">About</span><span class="eta">14 working days or less</span></div><div class="estimate"><b>🇨🇳 China bulk cargo</b><span class="mid">About</span><span class="eta">60 days</span></div><div class="estimate"><b>🇨🇳 China small parcels</b><span class="mid">About</span><span class="eta">7 to 14 working days</span></div><div class="small-note">Estimates are guidelines and may vary due to customs, holidays, weather, seller handling, or shipping delays.</div></div>
-</section>
-<section class="main" id="resultArea"><div>
-<div class="card result"><div class="result-head">▣ <b>Tracking result for: <span id="resultRef">TTG-RCP-000060</span></b><span class="found" id="found">Found</span><span class="updated">Last updated: Today, 11:31 AM &nbsp;↻</span></div>
-<div class="details"><div class="dcol"><div class="detail"><div class="di">♙</div><div><div class="dk">Client / Customer</div><div class="dv">Weston Tembo</div></div></div><div class="detail"><div class="di">▱</div><div><div class="dk">Device / Item</div><div class="dv">Laptop</div></div></div></div>
-<div class="dcol"><div class="detail"><div class="di">⌁</div><div><div class="dk">Condition</div><div class="dv">Deadboot / no boot</div></div></div><div class="detail"><div class="di">🛠</div><div><div class="dk">Service Type</div><div class="dv">Parts Procurement Deposit</div></div></div></div>
-<div class="dcol"><div class="detail"><div class="di">▤</div><div><div class="dk">Tracking Reference (Receipt ID)</div><div class="dv blue">TTG-RCP-000060</div></div></div><div class="detail"><div class="di">▱</div><div><div class="dk">Master Tracking ID</div><div class="dv purple">TTG-TXN-000060</div></div></div></div>
-<div class="dcol"><div class="detail"><div class="di">🇺🇸</div><div><div class="dk">Route / Origin</div><div class="dv route">USA <span>→</span> Zambia 🇿🇲</div></div></div><div class="detail"><div class="di">▣</div><div><div class="dk">Amount Received</div><div class="dv green">ZMW 1,700.00</div><div class="dk" style="margin-top:8px">Payment Method</div><div class="dv">Mobile Money</div></div></div></div></div></div>
-<div class="card progress"><div class="title">Job Progress</div><div class="steps" id="steps">
-<div class="step done"><div class="dot">✓</div><div class="sl">Intake<br>received</div><div class="ss">Completed</div></div><div class="step done"><div class="dot">✓</div><div class="sl">Disclaimer<br>confirmed</div><div class="ss">Completed</div></div><div class="step done"><div class="dot">✓</div><div class="sl">Deposit<br>received</div><div class="ss">Completed</div></div><div class="step done"><div class="dot">✓</div><div class="sl">Parts<br>sourcing</div><div class="ss">Completed</div></div><div class="step done"><div class="dot">✓</div><div class="sl">Parts<br>ordered</div><div class="ss">Completed</div></div><div class="step done"><div class="dot">✓</div><div class="sl">Awaiting seller<br>shipment</div><div class="ss">Completed</div></div><div class="step done"><div class="dot">✓</div><div class="sl">Seller<br>shipped</div><div class="ss">Completed</div></div><div class="step current"><div class="dot">🚚</div><div class="sl">Shipping company<br>received</div><div class="ss">In progress</div></div><div class="step"><div class="dot">✈</div><div class="sl">In transit to<br>Zambia</div><div class="ss">Pending</div></div><div class="step"><div class="dot">▣</div><div class="sl">Received in Zambia /<br>local shipping received</div><div class="ss">Pending</div></div><div class="step"><div class="dot">□</div><div class="sl">Parts received<br>by TTG</div><div class="ss">Pending</div></div><div class="step"><div class="dot">🛠</div><div class="sl">Repair in<br>progress</div><div class="ss">Pending</div></div><div class="step"><div class="dot">⌁</div><div class="sl">Testing</div><div class="ss">Pending</div></div><div class="step"><div class="dot">♧</div><div class="sl">Ready for<br>collection</div><div class="ss">Pending</div></div><div class="step"><div class="dot">✓</div><div class="sl">Completed</div><div class="ss">Pending</div></div></div>
-<div class="status"><div class="status-i">i</div><div><b>Current status: <strong>Shipping company received</strong></b><p>The seller has shipped the parcel from the USA. The shipping company has received it, and transit to Zambia is underway.</p></div></div></div>
-<div class="lower"><div class="card update"><div class="update-top">🔊 &nbsp;Latest Update <span class="pill">In Progress</span></div><p><b>Today, 11:31 AM &nbsp; • &nbsp; USA</b><br>The seller has shipped the parcel and the shipping company has received it in the USA. Transit to Zambia is underway. Tracking updates will continue as the parcel moves.</p><div class="source">Tracking Source: Shipping company / TTG update</div></div><div class="card docs"><div class="title">▤ &nbsp;Important Documents</div><div class="small-note">View your job documents.</div><div class="doclinks"><div class="doclink">Receipt · TTG-RCP-000060</div><div class="doclink">Disclaimer · TTG-DOC-000060</div></div></div></div>
-</div><aside class="aside"><div class="card summary"><div class="title">▤ &nbsp;Tracking Summary</div><div class="summary-grid"><span>Reference</span><span>TTG-RCP-000060</span><span>Master ID</span><span>TTG-TXN-000060</span><span>Route</span><span class="blue">USA → Zambia</span><span>Status</span><span class="blue">Shipping company received</span><span>Last Update</span><span>Today, 11:31 AM</span><span>Location</span><span>USA</span><span>Next Update</span><span>Next scan / handoff</span><span>Payment Ref</span><span>PP260806.1444.054020</span></div></div>
-<div class="card help"><div><div class="title">❔ &nbsp;Need help?</div><p>Ask Maya about this parcel, tracking stages, shipping estimates, courier updates, customs, documents, or delivery questions.</p><button class="maya-open" onclick="toggle('maya')">Open Maya &nbsp;💬</button></div><div><div class="maya-avatar">M</div><div style="text-align:center;font-size:10px;font-weight:800;margin-top:5px">Maya</div></div></div></aside></section>
+
+<main class="page" id="track">
+  <section class="hero">
+    <picture class="parcel-wrap" aria-hidden="true">
+      <img src="/parcel.svg" alt="" class="parcel-img">
+    </picture>
+    <div class="hero-copy">
+      <h1>Track your <span>gadget, parcel or order</span></h1>
+      <p>Enter your TTG receipt, invoice, disclaimer, quote or master tracking ID to view real-time updates on your job.</p>
+      <form class="search" id="searchForm">
+        <label class="search-input">⌕ <input id="trackingInput" value="TTG-RCP-000060" aria-label="Tracking ID" autocomplete="off"></label>
+        <button class="track-btn" type="submit">Track <span>→</span></button>
+      </form>
+      <div class="search-note">Use any TTG receipt, invoice, disclaimer, quote, or tracking ID.</div>
+      <div class="chips" aria-label="Example tracking IDs">
+        <b>Examples:</b>
+        <span>TTG-RCP-000060</span><span>TTG-INV-000060</span><span>TTG-DOC-000060</span><span>TTG-QTE-000060</span><span>TTG-TXN-000060</span>
+      </div>
+    </div>
+    <section class="card estimates hero-estimates">
+      <h2>🚚 Delivery / Transit Estimates</h2>
+      <div class="estimate"><b>🇺🇸 USA parcels</b><small>Usually about</small><strong>21 working days</strong></div>
+      <div class="estimate"><b>🇬🇧 UK parcels</b><small>About</small><strong>14 working days or less</strong></div>
+      <div class="estimate"><b>🇨🇳 China bulk cargo</b><small>About</small><strong>60 days</strong></div>
+      <div class="estimate"><b>🇨🇳 China small parcels</b><small>About</small><strong>7 to 14 working days</strong></div>
+      <p class="fine">Estimates are guidelines and may vary due to customs, holidays, weather, seller handling, or shipping delays.</p>
+    </section>
+  </section>
+
+  <section class="dashboard" id="resultArea">
+    <div class="maincol">
+      <section class="card result-card">
+        <div class="result-head"><span class="result-icon">▣</span><b>Tracking result for: <span id="resultRef">TTG-RCP-000060</span></b><span class="found" id="foundBadge">Found</span><span class="updated">Last updated: Today, 11:31 AM ↻</span></div>
+        <div class="detail-grid">
+          <div class="detail"><span class="icon">♙</span><div><small>Client / Customer</small><b>Weston Tembo</b></div></div>
+          <div class="detail"><span class="icon">⌁</span><div><small>Condition</small><b>Deadboot / no boot</b></div></div>
+          <div class="detail"><span class="icon">▤</span><div><small>Tracking Reference (Receipt ID)</small><b class="blue">TTG-RCP-000060</b></div></div>
+          <div class="detail"><span class="icon">🇺🇸</span><div><small>Route / Origin</small><b>USA <span class="route-arrow">→</span> Zambia 🇿🇲</b></div></div>
+          <div class="detail"><span class="icon">▱</span><div><small>Device / Item</small><b>Laptop</b></div></div>
+          <div class="detail"><span class="icon">🛠</span><div><small>Service Type</small><b>Parts Procurement Deposit</b></div></div>
+          <div class="detail"><span class="icon">▱</span><div><small>Master Tracking ID</small><b class="purple">TTG-TXN-000060</b></div></div>
+          <div class="detail"><span class="icon">▣</span><div><small>Amount Received</small><b class="green">ZMW 1,700.00</b><small class="second-label">Payment Method</small><b>Mobile Money</b></div></div>
+        </div>
+      </section>
+
+      <section class="card progress-card">
+        <h2>Job Progress</h2>
+        <div class="steps" id="steps">
+          <div class="step done"><i>✓</i><span>Intake<br>received</span><small>Completed</small></div>
+          <div class="step done"><i>✓</i><span>Disclaimer<br>confirmed</span><small>Completed</small></div>
+          <div class="step done"><i>✓</i><span>Deposit<br>received</span><small>Completed</small></div>
+          <div class="step done"><i>✓</i><span>Parts<br>sourcing</span><small>Completed</small></div>
+          <div class="step done"><i>✓</i><span>Parts<br>ordered</span><small>Completed</small></div>
+          <div class="step done"><i>✓</i><span>Awaiting seller<br>shipment</span><small>Completed</small></div>
+          <div class="step done"><i>✓</i><span>Seller<br>shipped</span><small>Completed</small></div>
+          <div class="step current"><i>🚚</i><span>Shipping company<br>received</span><small>In progress</small></div>
+          <div class="step"><i>✈</i><span>In transit to<br>Zambia</span><small>Pending</small></div>
+          <div class="step"><i>▣</i><span>Received in Zambia /<br>local shipping received</span><small>Pending</small></div>
+          <div class="step"><i>□</i><span>Parts received<br>by TTG</span><small>Pending</small></div>
+          <div class="step"><i>🛠</i><span>Repair in<br>progress</span><small>Pending</small></div>
+          <div class="step"><i>⌁</i><span>Testing</span><small>Pending</small></div>
+          <div class="step"><i>♧</i><span>Ready for<br>collection</span><small>Pending</small></div>
+          <div class="step"><i>✓</i><span>Completed</span><small>Pending</small></div>
+        </div>
+        <div class="status"><div class="status-icon">i</div><div><b>Current status: <strong>Shipping company received</strong></b><p>The seller has shipped the parcel from the USA. The shipping company has received it, and transit to Zambia is underway.</p></div></div>
+      </section>
+
+      <section class="lower-grid">
+        <div class="card update-card"><div class="update-title">🔊 Latest Update <span>In Progress</span></div><p><b>Today, 11:31 AM · USA</b><br>The seller has shipped the parcel and the shipping company has received it in the USA. Transit to Zambia is underway. Tracking updates will continue as the parcel moves.</p><strong class="source">Tracking Source: Shipping company / TTG update</strong></div>
+        <div class="card docs-card"><h2>▤ Important Documents</h2><p class="fine">View your job documents.</p><div class="doc-links"><button>Receipt · TTG-RCP-000060</button><button>Disclaimer · TTG-DOC-000060</button></div></div>
+      </section>
+    </div>
+
+    <aside class="sidebar">
+      <section class="card summary-card"><h2>▤ Tracking Summary</h2><div class="summary"><span>Reference</span><b>TTG-RCP-000060</b><span>Master ID</span><b>TTG-TXN-000060</b><span>Route</span><b class="blue">USA → Zambia</b><span>Status</span><b class="blue">Shipping company received</b><span>Last Update</span><b>Today, 11:31 AM</b><span>Location</span><b>USA</b><span>Next Update</span><b>Next scan / handoff</b><span>Payment Ref</span><b>PP260806.1444.054020</b></div></section>
+      <section class="card maya-card"><div><h2>❔ Need help?</h2><p>Ask Maya about this parcel, shipping stages, estimates, courier handoffs, customs, documents, or delivery questions.</p><button class="maya-open" type="button" onclick="togglePanel('maya')">Open Maya 💬</button></div><div class="maya-side"><span class="maya-avatar">M</span><b>Maya</b></div></section>
+    </aside>
+  </section>
+
+  <section class="mobile-estimates card estimates">
+    <h2>🚚 Delivery / Transit Estimates</h2>
+    <div class="estimate"><b>🇺🇸 USA parcels</b><strong>21 working days</strong></div>
+    <div class="estimate"><b>🇬🇧 UK parcels</b><strong>14 working days or less</strong></div>
+    <div class="estimate"><b>🇨🇳 China bulk cargo</b><strong>60 days</strong></div>
+    <div class="estimate"><b>🇨🇳 China small parcels</b><strong>7 to 14 working days</strong></div>
+    <p class="fine">Estimates are guidelines and may vary due to customs, holidays, weather, seller handling, or shipping delays.</p>
+  </section>
 </main>
-<footer class="footer"><div class="footerbar"><div class="foot">◈ Secure. Private. Trusted.<small>Your tracking data is handled safely.</small></div><div class="foot">✓ Real-time updates<small>Track every stage of your order journey.</small></div><div class="foot">◉ Transparent & Reliable<small>Clear status, timelines and handoffs.</small></div><div class="foot">◎ Powered by THETECHGUY DIGITAL SOLUTIONS<small>Fairytale Business — Make a wish, we sort it.</small></div><div class="domain">◉ &nbsp;tracking.thetechguyds.com</div></div></footer>
-<button class="floating" onclick="toggle('maya')" aria-label="Open Maya">•••</button>
-<section class="portal" id="portal"><div class="popup-head"><div>👤</div><div><b>Client Portal</b><small>Referrals, tracking shortcuts and client tools</small></div><button class="close" onclick="toggle('portal',false)">×</button></div><div class="portal-body"><div class="portal-stats"><div class="pstat"><div class="k">Referral status</div><div class="v">Active</div></div><div class="pstat"><div class="k">Referral credits</div><div class="v">ZMW 0.00</div></div></div><div class="psection"><h4>Client portal</h4><ul><li>Referral activity and rewards</li><li>Saved tracking IDs and recent documents</li><li>Shipping / pickup details</li><li>Order and parcel history</li></ul></div></div></section>
-<section class="maya" id="maya"><div class="popup-head"><div class="maya-brand">M</div><div><b>Maya</b><small>Live · THETECHGUY front desk · Shipping</small></div><button class="close" onclick="toggle('maya',false)">×</button></div><div class="maya-body"><div class="bubble"><b>Hey, how can I help today?</b><br>On tracking, I can help with your parcel status, shipping stages, delivery estimates, courier handoffs, documents, and Zambia-bound delivery questions.</div><div class="quick"><button>Track my parcel</button><button>Delivery estimate</button><button>What happens next?</button><button>Courier update</button><button>Customs / ETA</button><button>My documents</button></div><div class="chatrow"><input placeholder="Ask Maya about shipping or tracking…"><button class="send">Send</button></div></div></section>
-<script src="/app.js"></script>
-</body></html>
+
+<footer class="footer"><div>◈ <b>Secure. Private. Trusted.</b><small>Your tracking data is handled safely.</small></div><div>✓ <b>Real-time updates</b><small>Track every stage of your order journey.</small></div><div>◉ <b>Transparent & Reliable</b><small>Clear status, timelines and handoffs.</small></div><div>◎ <b>Powered by THETECHGUY DIGITAL SOLUTIONS</b><small>Fairytale Business — Make a wish, we sort it.</small></div><strong>tracking.thetechguyds.com</strong></footer>
+
+<button class="floating" type="button" onclick="togglePanel('maya')" aria-label="Open Maya"><span>•••</span></button>
+
+<section class="panel portal-panel" id="portal">
+  <div class="panel-head"><div>👤</div><div><b>Client Portal</b><small>Referrals, tracking shortcuts and client tools</small></div><button onclick="togglePanel('portal',false)">×</button></div>
+  <div class="panel-body"><div class="portal-stats"><div><small>Referral status</small><b>Active</b></div><div><small>Referral credits</small><b>ZMW 0.00</b></div></div><div class="portal-section"><b>Client portal</b><ul><li>Referral activity and rewards</li><li>Saved tracking IDs and recent documents</li><li>Shipping / pickup details</li><li>Order and parcel history</li></ul></div></div>
+</section>
+
+<section class="panel maya-panel" id="maya">
+  <div class="panel-head maya-head"><span class="maya-avatar small">M</span><div><b>Maya</b><small>Live · THETECHGUY front desk</small></div><button onclick="togglePanel('maya',false)">×</button></div>
+  <div class="panel-body"><div class="maya-bubble"><b>Hey, how can I help today?</b><br>On this tracking site I can help with parcel status, shipping stages, delivery estimates, courier handoffs, documents, and Zambia-bound delivery questions.</div><div class="quick"><button>Track my parcel</button><button>Delivery estimate</button><button>What happens next?</button><button>Courier update</button><button>Customs / ETA</button><button>My documents</button></div><div class="chatrow"><input placeholder="Ask Maya about shipping or tracking…"><button>Send</button></div></div>
+</section>
+<script src="/app.js?v=20260808b"></script>
+</body>
+</html>
