@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 300" role="img" aria-labelledby="title desc">
+<title id="title">THETECHGUY parcel</title><desc id="desc">A branded TTG shipping box used on the tracking site.</desc>
+<defs>
+  <linearGradient id="front" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d79a59"/><stop offset="1" stop-color="#a9632d"/></linearGradient>
+  <linearGradient id="side" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b87336"/><stop offset="1" stop-color="#81451f"/></linearGradient>
+  <linearGradient id="top" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e4ad70"/><stop offset="1" stop-color="#bb763c"/></linearGradient>
+  <linearGradient id="tape" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#c28a57"/><stop offset=".5" stop-color="#e1b27d"/><stop offset="1" stop-color="#bb7e49"/></linearGradient>
+  <radialGradient id="glow"><stop stop-color="#377bff" stop-opacity=".28"/><stop offset=".52" stop-color="#8f46ff" stop-opacity=".13"/><stop offset="1" stop-color="#5383ff" stop-opacity="0"/></radialGradient>
+  <filter id="shadow" x="-30%" y="-30%" width="160%" height="190%"><feDropShadow dx="0" dy="18" stdDeviation="14" flood-color="#171d35" flood-opacity=".28"/></filter>
+</defs>
+<ellipse cx="210" cy="252" rx="170" ry="40" fill="url(#glow)"/>
+<g opacity=".13" fill="#3972d6"><circle cx="56" cy="56" r="2"/><circle cx="72" cy="56" r="2"/><circle cx="88" cy="56" r="2"/><circle cx="56" cy="72" r="2"/><circle cx="72" cy="72" r="2"/><circle cx="88" cy="72" r="2"/><circle cx="330" cy="54" r="2"/><circle cx="346" cy="54" r="2"/><circle cx="362" cy="54" r="2"/><circle cx="330" cy="70" r="2"/><circle cx="346" cy="70" r="2"/><circle cx="362" cy="70" r="2"/></g>
+<g filter="url(#shadow)">
+  <path d="M91 103 204 51l133 53-114 55Z" fill="url(#top)" stroke="#8f5528" stroke-width="2"/>
+  <path d="M91 103 223 159v101L91 203Z" fill="url(#front)" stroke="#8f5528" stroke-width="2"/>
+  <path d="m223 159 114-55v102l-114 54Z" fill="url(#side)" stroke="#74401f" stroke-width="2"/>
+  <path d="m187 59 34-16 132 52-35 17Z" fill="url(#tape)" opacity=".88"/>
+  <path d="m190 145 33 14v101l-33-14Z" fill="url(#tape)" opacity=".82"/>
+  <g transform="translate(119 130) skewY(1)">
+    <rect x="0" y="0" width="72" height="45" rx="3" fill="#f7f7f7" stroke="#c9c9c9"/>
+    <rect x="7" y="8" width="57" height="3" fill="#222"/><rect x="7" y="15" width="2" height="17" fill="#222"/><rect x="12" y="15" width="1" height="17" fill="#222"/><rect x="16" y="15" width="3" height="17" fill="#222"/><rect x="22" y="15" width="1" height="17" fill="#222"/><rect x="26" y="15" width="2" height="17" fill="#222"/><rect x="31" y="15" width="4" height="17" fill="#222"/><rect x="38" y="15" width="1" height="17" fill="#222"/><rect x="42" y="15" width="3" height="17" fill="#222"/><rect x="48" y="15" width="2" height="17" fill="#222"/><rect x="53" y="15" width="1" height="17" fill="#222"/><rect x="57" y="15" width="4" height="17" fill="#222"/>
+    <text x="7" y="40" font-family="Arial,sans-serif" font-size="6" fill="#444">TRACKED / HANDLE WITH CARE</text>
+  </g>
+  <g transform="translate(239 145) skewY(-25)">
+    <text x="0" y="40" font-family="Arial Black,Arial,sans-serif" font-size="42" font-weight="900" fill="#0b2459" letter-spacing="-2">TTG</text>
+    <text x="2" y="55" font-family="Arial,sans-serif" font-size="9" font-weight="800" fill="#102b60" letter-spacing="1.2">DIGITAL SOLUTIONS</text>
+  </g>
+  <g transform="translate(112 183) skewY(1)" fill="#553217">
+    <path d="M3 18h21v-3H3zm2-5h17L18 2H9z"/><text x="31" y="17" font-family="Arial,sans-serif" font-size="13" font-weight="700">↑ ↑</text><path d="M70 1h17v17H70z" fill="none" stroke="#553217" stroke-width="2"/><path d="m73 13 4-8 4 8m-8 0h8" fill="none" stroke="#553217" stroke-width="2"/>
+  </g>
+</g>
+</svg>
