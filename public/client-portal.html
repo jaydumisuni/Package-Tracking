@@ -5,19 +5,22 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
 <meta name="theme-color" content="#050914">
 <title>THETECHGUY Client Portal</title>
-<link rel="icon" type="image/svg+xml" href="/ttg-ghost-main.svg?v=20260808f">
+<link rel="icon" type="image/svg+xml" href="/ttg-ghost-main.svg?v=20260808g">
 <link rel="apple-touch-icon" href="https://thetechguyds.com/apple-touch-icon.png">
-<link rel="stylesheet" href="/styles.css?v=20260808f">
+<link rel="stylesheet" href="/styles.css?v=20260808g">
+<style>
+.portal-topbar{position:sticky;top:0;justify-content:center;padding-left:120px;padding-right:120px}.portal-topbar .brand{min-width:0}.portal-topbar .brand img{height:58px;width:58px;object-fit:contain}.portal-corner-back{position:absolute;left:18px;top:50%;transform:translateY(-50%);height:42px;padding:0 14px;border-radius:10px;border:1px solid color-mix(in srgb,var(--blue) 60%,var(--purple));background:color-mix(in srgb,var(--panel) 90%,transparent);color:var(--blue);font-weight:800;display:flex;align-items:center;gap:7px;white-space:nowrap}.portal-topbar .nav{position:absolute;right:24px}.portal-page{padding-top:24px}.portal-hero{padding-top:4px}
+@media(max-width:760px){.portal-topbar{height:84px;padding:0 76px}.portal-topbar .nav{display:none}.portal-topbar .brand img{height:64px;width:64px}.portal-corner-back{left:12px;width:48px;padding:0;justify-content:center}.portal-corner-back span{display:none}}
+</style>
 </head>
 <body>
-<header class="topbar">
-  <a class="brand" href="https://thetechguyds.com"><img src="https://thetechguyds.com/assets/ttg-asset-002-8f95ed29fe9a.png" alt="THETECHGUY DIGITAL SOLUTIONS"></a>
+<header class="topbar portal-topbar">
+  <a class="portal-corner-back" href="/" aria-label="Back to tracking">← <span>Back</span></a>
+  <a class="brand" href="https://thetechguyds.com" aria-label="THETECHGUY DIGITAL SOLUTIONS"><img src="/ttg-ghost-main.svg?v=20260808g" alt="THETECHGUY DIGITAL SOLUTIONS"></a>
   <nav class="nav"><a href="/">Tracking</a><a href="https://thetechguyds.com/#services">Services</a><a href="https://events.thetechguyds.com">Events</a></nav>
-  <a class="portal-btn" href="/">← <span>Back to Tracking</span></a>
 </header>
 
 <main class="portal-page">
-  <a class="portal-back" href="/">← Back to tracking</a>
   <section class="portal-hero">
     <h1>Client Portal</h1>
     <p>Your quick space for referral information, delivery guidance and shortcuts into the wider THETECHGUY ecosystem.</p>
