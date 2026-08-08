@@ -17,16 +17,38 @@ function maskPhone(phone){
   return`+${phone.slice(0,Math.max(1,phone.length-7))}***${phone.slice(-4)}`;
 }
 
+function phoneValuesFromContact(contact){
+  if(!contact||typeof contact!=="object")return[];
+  return[
+    contact.phone,contact.phoneNumber,contact.phone_number,
+    contact.mainPhone,contact.main_phone,
+    contact.mobile,contact.mobilePhone,contact.mobile_phone,
+    contact.whatsapp,contact.whatsApp,contact.whatsappNumber,contact.whatsapp_number,
+    contact.senderPhone,contact.sender_phone,
+    contact.phones,contact.phoneNumbers,contact.phone_numbers
+  ];
+}
+
 function collectPhones(body={}){
   const job=body.job||{};
+  const clientSections=[
+    job.client,job.customer,job.business,job.clientBusiness,job.client_business,
+    body.client,body.customer,body.business,body.clientBusiness,body.client_business
+  ];
+  const paymentSections=[
+    job.payment,job.paymentConfirmation,job.payment_confirmation,
+    body.payment,body.paymentConfirmation,body.payment_confirmation
+  ];
   const values=[
     job.clientPhones,job.client_phones,job.phones,job.contactPhones,job.contact_phones,
     body.clientPhones,body.client_phones,body.phones,body.contactPhones,body.contact_phones,
     job.clientPhone,job.client_phone,job.phone,job.mainPhone,job.main_phone,job.senderPhone,job.sender_phone,
-    body.clientPhone,body.client_phone,body.phone,body.mainPhone,body.main_phone,body.senderPhone,body.sender_phone
+    body.clientPhone,body.client_phone,body.phone,body.mainPhone,body.main_phone,body.senderPhone,body.sender_phone,
+    ...clientSections.flatMap(phoneValuesFromContact),
+    ...paymentSections.flatMap(phoneValuesFromContact)
   ];
   const flat=values.flatMap(v=>Array.isArray(v)?v:[v]);
-  return [...new Set(flat.map(normalizePhone).filter(Boolean))];
+  return[...new Set(flat.map(normalizePhone).filter(Boolean))];
 }
 
 async function isAdmin(request,env){return Boolean(env.ADMIN_TOKEN)&&(request.headers.get("authorization")||"")===`Bearer ${env.ADMIN_TOKEN}`}
@@ -86,15 +108,28 @@ async function manualLink(request,env){
   return J({ok:true,reference,phones:phones.map(maskPhone),count:phones.length});
 }
 
-async function upsertAndLink(request,env,ctx,core){
+async function upsertAndLink(request,env,ctx,core,{transactionStart=false}={}){
   const clone=request.clone(),body=await clone.json().catch(()=>({}));
   const phones=collectPhones(body);
   const job=body.job||{};
+  const master=N(job.masterTransactionId||body.masterTransactionId);
+  if(transactionStart&&!master)return J({ok:false,error:"masterTransactionId required at transaction start"},400);
+
   const response=await core.fetch(request,env,ctx);
-  if(!response.ok||!phones.length||!env.TRACKING_DB)return response;
+  if(!response.ok||!env.TRACKING_DB)return response;
+
   const payload=await response.clone().json().catch(()=>null);
-  const jobId=payload?.id||await resolveJobId(env.TRACKING_DB,job.masterTransactionId||job.publicReference||"");
+  const jobId=payload?.id||await resolveJobId(env.TRACKING_DB,master||job.publicReference||body.publicReference||"");
   if(!jobId)return response;
+
+  if(!phones.length){
+    const data=payload||{ok:true};
+    data.phoneLinked=false;
+    data.phoneCount=0;
+    data.phoneLinkWarning="No client/contact phone was supplied with this transaction. ID tracking still works, but phone lookup will not.";
+    return J(data,response.status);
+  }
+
   try{await linkPhones(env.TRACKING_DB,jobId,phones)}
   catch(error){
     console.error("job saved but phone links failed",String(error));
@@ -103,6 +138,7 @@ async function upsertAndLink(request,env,ctx,core){
     data.phoneLinkWarning="phone lookup migration is not applied";
     return J(data,response.status);
   }
+
   const data=payload||{ok:true};
   data.phoneLinked=true;
   data.phones=phones.map(maskPhone);
@@ -110,10 +146,29 @@ async function upsertAndLink(request,env,ctx,core){
   return J(data,response.status);
 }
 
+async function transactionStart(request,env,ctx,core){
+  if(!await isAdmin(request,env))return J({ok:false,error:"unauthorized"},401);
+  if(!env.TRACKING_DB)return J({ok:false,error:"TRACKING_DB is not bound"},503);
+
+  const body=await request.clone().json().catch(()=>({}));
+  const job=body.job||{};
+  if(!job.masterTransactionId&&body.masterTransactionId)job.masterTransactionId=body.masterTransactionId;
+  if(!job.publicReference&&body.publicReference)job.publicReference=body.publicReference;
+  const normalizedBody={...body,job};
+
+  const coreRequest=new Request(new URL("/api/admin/jobs/upsert",request.url),{
+    method:"POST",
+    headers:request.headers,
+    body:JSON.stringify(normalizedBody)
+  });
+  return upsertAndLink(coreRequest,env,ctx,core,{transactionStart:true});
+}
+
 export async function handleClientLookup(request,env,ctx,core){
   const url=new URL(request.url);
   if(url.pathname==="/api/client-jobs"&&request.method==="GET")return phoneJobs(request,env);
   if(url.pathname==="/api/admin/client-phone/link"&&request.method==="POST")return manualLink(request,env);
+  if(url.pathname==="/api/admin/transactions/start"&&request.method==="POST")return transactionStart(request,env,ctx,core);
   if(url.pathname==="/api/admin/jobs/upsert"&&request.method==="POST")return upsertAndLink(request,env,ctx,core);
   return null;
 }
