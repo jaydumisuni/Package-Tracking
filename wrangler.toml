@@ -1,5 +1,13 @@
 name = "package-tracking"
+main = "src/worker.js"
 compatibility_date = "2026-08-08"
 
 [assets]
 directory = "./public"
+binding = "ASSETS"
+
+[observability]
+enabled = true
+
+[triggers]
+crons = ["*/15 * * * *"]
