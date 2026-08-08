@@ -1,1 +1,0 @@
-Visual asset correction in progress: exact uploaded TTG ghost and sharp 3D parcel render. This staging note can be removed after the binary asset commit.
