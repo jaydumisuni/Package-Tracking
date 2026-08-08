@@ -6,9 +6,11 @@ The Worker serves both the static tracking UI and API routes.
 
 - `/` and static files -> Worker Static Assets
 - `GET /api/track?id=TTG-...` -> public tracking lookup
+- `GET /api/client-jobs?phone=...` -> D1 phone lookup for active jobs
 - `POST /api/maya` -> tracking-scoped Maya response
 - `POST /api/admin/jobs/upsert` -> create/update a tracking job
 - `POST /api/admin/jobs/update` -> append a TTG tracking note/stage
+- `POST /api/admin/client-phone/link` -> link one or more client/contact phones to an existing D1 job
 - `POST /api/admin/carriers/link` -> link a private carrier number to a TTG job
 - `POST /api/admin/carriers/sync` -> force carrier sync
 - scheduled trigger -> checks active private carrier links every 15 minutes
@@ -19,7 +21,9 @@ Create a D1 database, apply `schema.sql`, and bind it to the Worker as:
 
 `TRACKING_DB`
 
-Do not put live customer data or real carrier tracking numbers in GitHub.
+D1 is the tracking source of truth. The public UI must not manufacture a tracking record or phone association when D1 does not contain it.
+
+Do not put live customer data or real carrier tracking numbers in frontend code.
 
 The public customer lookup uses TTG aliases such as:
 
@@ -30,6 +34,32 @@ The public customer lookup uses TTG aliases such as:
 - `TTG-TXN-000060`
 
 All aliases can point to the same `tracking_jobs` row.
+
+## Client phone lookup
+
+`client_job_links` maps normalized phone numbers to D1 tracking jobs. A job may have more than one phone number and a phone may have more than one active job.
+
+Zambian forms such as `0974716428`, `260974716428`, and `+260 974 716 428` normalize to the same D1 key.
+
+When creating/updating a job, the admin payload may provide multiple numbers, for example:
+
+```json
+{
+  "job": {
+    "masterTransactionId": "TTG-TXN-000060",
+    "publicReference": "TTG-RCP-000060",
+    "clientPhones": ["0976959694", "+260 97 471 6428"]
+  }
+}
+```
+
+The ingestion layer also accepts common single-number fields such as `clientPhone`, `mainPhone`, and `senderPhone` so the client/business contact and payment/contact number can both be attached to the same transaction.
+
+A phone search returns only the lightweight list of D1 jobs. The UI then loads one selected job through `/api/track`; transaction details are never merged across jobs.
+
+If the number is absent from D1, the response is not Found. If a linked D1 job lacks required client/job data, the UI reports an incomplete record rather than showing a green Found state with blank details.
+
+Phone links use `ON DELETE CASCADE`, so closing/removing a handover job removes its phone links automatically.
 
 ## Admin authentication
 
@@ -73,7 +103,7 @@ The adapter stores the latest carrier scan as an internal tracking update and ma
 
 ## Maya
 
-Maya on this site is restricted to tracking/shipping context. The current Worker response layer is intentionally lightweight while Hunter is under maintenance. It reads the TTG tracking record when available and answers about:
+Maya on this site is restricted to tracking/shipping context. The current Worker response layer is intentionally lightweight while Hunter is under maintenance. It reads the selected D1 tracking record when available and answers about:
 
 - current stage
 - what happens next
@@ -82,4 +112,4 @@ Maya on this site is restricted to tracking/shipping context. The current Worker
 - customs / local handoff
 - TTG tracking documents
 
-When Hunter is restored, the `/api/maya` route can be upgraded to call Hunter while preserving the same UI and tracking context.
+When Hunter is restored, the `/api/maya` route can be upgraded to call Hunter while preserving the same UI and D1 tracking context.
