@@ -2,15 +2,60 @@
 
 Customer-facing tracking site for THETECHGUY DIGITAL SOLUTIONS.
 
-Planned public hostname: `tracking.thetechguyds.com`
+Public hostname: `tracking.thetechguyds.com`
 
-The site resolves TTG document references (receipt, invoice, disclaimer, quote, and master transaction IDs) to one tracking/job view. The current frontend is a deployable Cloudflare Workers static-assets build; tracking data/API wiring will be connected separately.
+The site resolves TTG document references (receipt, invoice, disclaimer, quote, and master transaction IDs) to one tracking/job view.
 
-## Cloudflare Workers
+## Architecture
 
-- Static files: `public/`
-- Wrangler config: `wrangler.toml`
+This repository is now a Cloudflare Worker + Static Assets application.
+
+- Static UI: `public/`
+- Worker API: `src/worker.js`
+- D1 schema: `schema.sql`
+- Worker config: `wrangler.toml`
+- Backend contract: `docs/TRACKING_BACKEND.md`
+
+Public tracking uses TTG references only. Supplier and carrier tracking numbers are private operational data stored in D1 and are never returned by the public tracking endpoint.
+
+## Main flows
+
+- `GET /api/track?id=TTG-...` — client tracking lookup
+- `POST /api/maya` — tracking-scoped Maya assistance
+- authenticated admin endpoints — create/update jobs, notes and private carrier links
+- scheduled carrier sync — checks active carrier links when provider credentials are configured
+
+The first carrier leg can represent seller → shipping company/forwarder. For that leg, the public TTG stage remains `seller_shipped` while the parcel is moving through the seller's carrier; when the carrier reports delivery to the shipping company/forwarder, TTG can advance automatically to `shipping_company_received`.
+
+## Client Portal
+
+`public/client-portal.html` contains:
+
+- referral information
+- route delivery/transit guidance
+- links back to the main THETECHGUY site and Events
+
+Delivery estimates are intentionally kept out of the main tracking result page.
+
+## D1 setup
+
+Create a Cloudflare D1 database, apply `schema.sql`, then bind it to the Worker as:
+
+`TRACKING_DB`
+
+Add an admin secret:
+
+`ADMIN_TOKEN`
+
+Real customer data and real carrier tracking numbers must be entered into D1/admin APIs, never committed to GitHub.
+
+## Optional FedEx sync
+
+The Worker contains a FedEx adapter that remains inactive until official FedEx credentials and endpoint variables are configured as Worker secrets/variables. See `docs/TRACKING_BACKEND.md`.
+
+## Commands
+
 - Local dev: `npm run dev`
 - Deploy: `npm run deploy`
 
-Hunter will eventually update tracking state automatically. Until that service returns from maintenance, tracking records can be updated through the temporary approved admin workflow.
+Hunter can later take over the same admin/API contract when maintenance is complete; the tracking data model does not need to change.
