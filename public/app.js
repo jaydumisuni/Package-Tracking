@@ -1,29 +1,135 @@
 (()=>{
-const css=`
-html,body{width:100%;max-width:100%;overflow-x:hidden}.page,.hero,.dashboard,.maincol,.sidebar,.result-card,.progress-card,.lower-grid,.detail-grid,.mobile-estimates{min-width:0;max-width:100%}.dashboard>*{min-width:0}.chips{min-width:0;max-width:100%}
-.hamburger{width:44px;height:44px;border:1px solid #353b48!important;border-radius:14px!important;background:#11151e!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);align-items:center;justify-content:center;flex-direction:column;gap:4px;color:#fff;padding:0!important}.hamburger span{display:block;width:16px;height:2.5px;border-radius:999px;background:#fff}.hamburger{font-size:0!important}
-.maya-side .maya-avatar{display:none!important}.maya-side img{width:70px;height:70px;object-fit:cover;display:block;margin:auto}.floating{width:82px!important;height:82px!important;padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important}.floating:after{display:none!important}.floating img{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 10px rgba(62,216,255,.28)) drop-shadow(0 0 14px rgba(160,54,255,.32))}
-.maya-panel{display:none!important;overflow:hidden!important;background:#03050f!important;border:1.5px solid #5c1fc7!important;border-radius:18px!important;color:#f7f8ff!important;box-shadow:0 24px 70px rgba(0,0,0,.56),0 0 28px rgba(98,32,210,.12)!important;flex-direction:column!important}.maya-panel.open{display:flex!important}.maya-main-head{min-height:86px;display:flex;align-items:center;gap:14px;padding:14px 16px;background:linear-gradient(115deg,#18132d 0%,#0c1730 55%,#071327 100%);border-bottom:1px solid #27314c}.maya-photo{width:58px;height:58px;object-fit:cover;flex:0 0 auto}.maya-title{min-width:0;line-height:1.1}.maya-title b{display:block;font-size:22px;font-weight:800}.maya-title small{display:flex;align-items:center;gap:7px;margin-top:7px;color:#a7afc5;font-size:14px;white-space:nowrap}.maya-title small i{width:13px;height:13px;border-radius:50%;background:#19c96b;box-shadow:0 0 10px rgba(25,201,107,.65);display:inline-block;flex:0 0 auto}.maya-close{margin-left:auto!important;width:78px!important;height:58px!important;border:1px solid #384152!important;border-radius:16px!important;background:#121a29!important;color:#f5f7ff!important;font-size:18px!important;font-weight:850!important;padding:0!important}.maya-conversation{flex:1;min-height:0;overflow-y:auto;padding:24px;background:#03050f}.maya-message{max-width:92%;width:max-content;padding:18px 22px;border-radius:17px;font-size:18px;line-height:1.35}.maya-message.assistant{background:#20212c;border:1px solid #323542;color:#e7eaf3}.maya-message.user{margin-left:auto;background:linear-gradient(135deg,#4a55ff,#9b35ee);color:#fff;border-bottom-right-radius:6px}.maya-message+.maya-message{margin-top:12px}.maya-compose{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:12px;align-items:center;padding:16px 20px 18px;border-top:1px solid #23283a;background:#080815}.maya-compose input{width:100%;height:58px;border:1px solid #343544;border-radius:30px;background:#20212c;color:#f3f5fb;outline:none;padding:0 20px;font-size:17px}.maya-compose input::placeholder{color:#a1a6b4}.maya-compose button{height:58px;border:0;border-radius:30px;background:linear-gradient(135deg,#7a5aff,#22b9df);color:#fff;font-size:18px;font-weight:850}
-@media(max-width:900px){.dashboard,.maincol,.result-card,.progress-card,.lower-grid,.sidebar{width:100%;min-width:0;max-width:100%}.steps{width:100%;max-width:100%;min-width:0;grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:82px;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;contain:inline-size}.hamburger{display:flex!important}.nav.mobile-open{display:flex!important;position:fixed;left:12px;right:12px;top:82px;z-index:75;flex-direction:column;align-items:stretch;gap:0;background:#080d18;border:1px solid #31394a;border-radius:16px;padding:10px;box-shadow:0 22px 50px rgba(0,0,0,.42)}.nav.mobile-open a{padding:13px 14px;color:#f5f7ff;border-radius:10px}.nav.mobile-open a.active{background:#111a2c}.nav.mobile-open a.active:after{display:none}.maya-panel{right:18px;bottom:120px;width:430px;height:min(620px,calc(100dvh - 150px))}}
-@media(max-width:600px){.steps{grid-auto-columns:74px}.result-head,.detail-grid,.status,.lower-grid,.summary-card,.maya-card,.mobile-estimates{min-width:0;max-width:100%}.detail,.detail>div{min-width:0}.detail b,.detail small{overflow-wrap:anywhere}.hero-copy h1,.hero-copy p,.search,.search-input,.search-input input{min-width:0;max-width:100%}.topbar{height:78px!important}.hamburger{width:44px;height:44px;border-radius:14px;flex:0 0 44px}.floating{width:68px!important;height:68px!important;right:10px!important;bottom:18px!important}.maya-panel{left:10px!important;right:10px!important;top:92px!important;bottom:82px!important;width:auto!important;height:auto!important;border-radius:18px!important}.maya-main-head{min-height:74px;padding:12px 13px;gap:11px}.maya-photo{width:46px;height:46px}.maya-title b{font-size:20px}.maya-title small{font-size:12px;margin-top:5px;gap:6px}.maya-title small i{width:11px;height:11px}.maya-close{width:67px!important;height:50px!important;border-radius:15px!important;font-size:16px!important}.maya-conversation{padding:14px 13px}.maya-message{max-width:94%;padding:15px;font-size:16px;border-radius:15px}.maya-compose{grid-template-columns:minmax(0,1fr) 78px;gap:8px;padding:12px 12px 13px}.maya-compose input{height:50px;border-radius:26px;padding:0 16px;font-size:15px}.maya-compose button{height:50px;border-radius:26px;font-size:16px}}
-@media(max-width:390px){.maya-title small{font-size:11px}.maya-close{width:62px!important}.maya-main-head{padding-left:10px;padding-right:10px}.maya-photo{width:44px;height:44px}}
-`;
-const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
+  const $=id=>document.getElementById(id);
+  const STAGES=['intake_received','disclaimer_confirmed','deposit_received','parts_sourcing','parts_ordered','awaiting_seller_shipment','seller_shipped','shipping_company_received','in_transit_to_zambia','received_in_zambia','parts_received_by_ttg','repair_in_progress','testing','ready_for_collection','completed'];
+  const stageLabels={
+    intake_received:'Intake received',disclaimer_confirmed:'Disclaimer confirmed',deposit_received:'Deposit received',parts_sourcing:'Parts sourcing',parts_ordered:'Parts ordered',awaiting_seller_shipment:'Awaiting seller shipment',seller_shipped:'Seller shipped',shipping_company_received:'Shipping company received',in_transit_to_zambia:'In transit to Zambia',received_in_zambia:'Received in Zambia / local shipping received',parts_received_by_ttg:'Parts received by TTG',repair_in_progress:'Repair in progress',testing:'Testing',ready_for_collection:'Ready for collection',completed:'Completed'
+  };
+  const demo={
+    found:true,reference:'TTG-RCP-000060',masterId:'TTG-TXN-000060',clientName:'Weston Tembo',condition:'Deadboot / no boot',deviceItem:'Laptop',serviceType:'Parts Procurement Deposit',route:'USA → Zambia',origin:'USA',amountReceived:'ZMW 1,700.00',paymentMethod:'Mobile Money',stage:'shipping_company_received',updatedLabel:'Today, 11:31 AM',statusNote:'The seller has shipped the parcel from the USA. The shipping company has received it, and transit to Zambia is the next stage.',latestUpdate:'The seller has shipped the parcel and the shipping company has received it in the USA. Tracking will continue as the parcel moves.'
+  };
 
-const hamburger=document.querySelector('.hamburger');if(hamburger){hamburger.innerHTML='<span></span><span></span><span></span>';hamburger.setAttribute('aria-expanded','false')}
-const nav=document.querySelector('.nav');hamburger?.addEventListener('click',()=>{const open=nav?.classList.toggle('mobile-open');hamburger.setAttribute('aria-expanded',String(!!open))});nav?.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('mobile-open');hamburger?.setAttribute('aria-expanded','false')}));
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  const normalizeId=v=>String(v||'').trim().toUpperCase();
+  const setText=(id,value)=>{const el=$(id);if(el&&value!==undefined&&value!==null&&value!=='')el.textContent=value};
+  const moneyText=v=>typeof v==='number'?`ZMW ${v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`:v;
 
-const side=document.querySelector('.maya-side');if(side){const old=side.querySelector('.maya-avatar');if(old)old.insertAdjacentHTML('afterend','<img src="https://thetechguyds.com/assets/chat/maya-avatar.webp" alt="Maya">')}
-const floating=document.querySelector('.floating');if(floating)floating.innerHTML='<img src="https://thetechguyds.com/assets/ttg-asset-045-1f0dbae6eeb1.webp" alt="Maya help desk">';
-const maya=document.getElementById('maya');if(maya)maya.innerHTML=`<div class="maya-main-head"><img class="maya-photo" src="https://thetechguyds.com/assets/chat/maya-avatar.webp" alt="Maya"><div class="maya-title"><b>Maya</b><small><i></i>Live · THETECHGUY front desk</small></div><button class="maya-close" type="button" onclick="togglePanel('maya',false)">Close</button></div><div class="maya-conversation" id="mayaMessages"><div class="maya-message assistant">Hey, how can I help today?</div></div><form class="maya-compose" id="mayaForm"><input id="mayaInput" autocomplete="off" placeholder="Type what you need..." aria-label="Message Maya"><button type="submit">Send</button></form>`;
+  function updateStages(stage){
+    const index=Math.max(0,STAGES.indexOf(stage));
+    document.querySelectorAll('.step[data-stage]').forEach((el,i)=>{
+      el.classList.toggle('done',i<index);
+      el.classList.toggle('current',i===index);
+      const small=el.querySelector('small');
+      if(small)small.textContent=i<index?'Completed':i===index?'In progress':'Pending';
+    });
+    requestAnimationFrame(()=>centerCurrentStage());
+  }
+  function centerCurrentStage(){
+    if(innerWidth>900)return;
+    const s=$('steps'),c=s?.querySelector('.current');
+    if(s&&c)s.scrollLeft=Math.max(0,c.offsetLeft-(s.clientWidth-c.clientWidth)/2);
+  }
+  function applyRecord(record,inputId){
+    const r={...demo,...record};
+    const reference=r.reference||inputId;
+    setText('resultRef',reference);setText('publicReference',reference);setText('summaryReference',reference);
+    setText('clientName',r.clientName);setText('condition',r.condition);setText('deviceItem',r.deviceItem);setText('serviceType',r.serviceType);
+    setText('masterId',r.masterId);setText('summaryMaster',r.masterId);setText('route',r.route);setText('summaryRoute',r.route);
+    setText('amountReceived',moneyText(r.amountReceived));setText('paymentMethod',r.paymentMethod);
+    const label=stageLabels[r.stage]||r.status||'Tracking update';
+    setText('currentStatus',label);setText('summaryStatus',label);setText('statusNote',r.statusNote);
+    setText('summaryLocation',r.location||r.origin||'');setText('summaryUpdated',r.updatedLabel);setText('lastUpdated',`Last updated: ${r.updatedLabel} ↻`);
+    const latest=$('latestUpdate');if(latest)latest.innerHTML=`<b>${r.updatedLabel}${r.location||r.origin?` · ${r.location||r.origin}`:''}</b><br>${r.latestUpdate||r.statusNote||''}`;
+    updateStages(r.stage||'intake_received');
+  }
 
-const form=document.getElementById('searchForm'),input=document.getElementById('trackingInput'),ref=document.getElementById('resultRef'),badge=document.getElementById('foundBadge'),ok=/^TTG-(RCP|INV|DOC|QTE|TXN)-0*60$/i;
-form?.addEventListener('submit',e=>{e.preventDefault();const id=input.value.trim().toUpperCase();ref.textContent=id||'—';if(ok.test(id)){badge.textContent='Found';badge.classList.remove('bad');document.getElementById('resultArea')?.scrollIntoView({behavior:'smooth',block:'start'})}else{badge.textContent='Not found';badge.classList.add('bad')}});
-const centerCurrent=()=>{if(innerWidth<=900){const s=document.getElementById('steps'),c=s?.querySelector('.current');if(s&&c)s.scrollLeft=Math.max(0,c.offsetLeft-(s.clientWidth-c.clientWidth)/2)}};requestAnimationFrame(centerCurrent);window.addEventListener('resize',centerCurrent,{passive:true});
+  async function fetchTracking(id){
+    try{
+      const res=await fetch(`/api/track?id=${encodeURIComponent(id)}`,{headers:{accept:'application/json'}});
+      if(!res.ok)return {found:false};
+      return await res.json();
+    }catch{return /^TTG-(RCP|INV|DOC|QTE|TXN)-0*60$/i.test(id)?demo:{found:false}}
+  }
 
-const mf=document.getElementById('mayaForm'),mi=document.getElementById('mayaInput'),mm=document.getElementById('mayaMessages');
-const add=(text,kind='assistant')=>{const el=document.createElement('div');el.className='maya-message '+kind;el.textContent=text;mm?.appendChild(el);if(mm)mm.scrollTop=mm.scrollHeight};
-const answer=raw=>{const q=raw.toLowerCase();if(/ttg-(rcp|inv|doc|qte|txn)-/i.test(raw)||/track|status|where.*parcel|where.*order/.test(q))return'For TTG-RCP-000060, the seller has shipped the parcel in the USA and the shipping company has received it. The next stage is transit to Zambia.';if(/usa|america/.test(q)&&/long|days|eta|time|delivery|arrive/.test(q))return'USA parcels usually take about 21 working days after the shipping company receives the parcel. Seller handling, customs and flight schedules can change that estimate.';if(/uk|britain|england/.test(q)&&/long|days|eta|time|delivery|arrive/.test(q))return'UK parcels are usually about 14 working days or less after the shipping company receives them.';if(/china/.test(q)&&/bulk|sea|large|heavy/.test(q))return'China bulk cargo is usually around 60 days. Smaller China parcels are normally about 7 to 14 working days.';if(/china/.test(q)&&/long|days|eta|time|delivery|arrive/.test(q))return'For smaller China parcels, allow about 7 to 14 working days. Bulk cargo is usually around 60 days.';if(/next|what happens/.test(q))return'The current stage is “Shipping company received.” Next is “In transit to Zambia,” then the local Zambia handoff, TTG receives the part, repair begins, testing, and finally ready for collection.';if(/custom|duty|clearance/.test(q))return'Customs or clearance can extend the estimate. Maya will show the latest TTG or courier update here when a new handoff or scan is recorded.';if(/document|receipt|invoice|disclaimer|quote/.test(q))return'You can use a TTG receipt, invoice, disclaimer, quote, or master transaction ID to open the same tracking record. This example uses TTG-RCP-000060.';if(/seller|shipped|shipping company|courier/.test(q))return'Once the seller ships, TTG records that handoff. When the shipping company receives the parcel, the tracking stage changes to “Shipping company received,” then to “In transit to Zambia.”';return'I handle shipping and tracking here. Ask me about your TTG tracking ID, current parcel stage, USA/UK/China delivery estimates, courier handoffs, customs, or tracking documents.'};
-mf?.addEventListener('submit',e=>{e.preventDefault();const text=mi.value.trim();if(!text)return;add(text,'user');mi.value='';setTimeout(()=>add(answer(text),'assistant'),220)});
+  const searchForm=$('searchForm'),trackingInput=$('trackingInput'),badge=$('foundBadge'),overlay=$('trackingOverlay');
+  searchForm?.addEventListener('submit',async e=>{
+    e.preventDefault();
+    const id=normalizeId(trackingInput?.value);
+    if(!id)return;
+    badge.textContent='Checking';badge.classList.remove('bad');
+    overlay?.classList.add('show');overlay?.setAttribute('aria-hidden','false');
+    const started=Date.now();
+    const record=await fetchTracking(id);
+    await wait(Math.max(0,3000-(Date.now()-started)));
+    overlay?.classList.remove('show');overlay?.setAttribute('aria-hidden','true');
+    if(record?.found!==false){
+      badge.textContent='Found';badge.classList.remove('bad');
+      applyRecord(record,id);
+      $('jobProgress')?.scrollIntoView({behavior:'smooth',block:'start'});
+    }else{
+      setText('resultRef',id);badge.textContent='Not found';badge.classList.add('bad');
+    }
+  });
+  requestAnimationFrame(centerCurrentStage);addEventListener('resize',centerCurrentStage,{passive:true});
+
+  const root=$('tgai-root'),panel=$('tgai-panel'),fab=$('tgai-fab'),close=$('tgai-close'),cardOpen=$('mayaCardOpen'),mayaForm=$('tgaiForm'),mayaInput=$('tgaiInput'),messages=$('tgaiMessages');
+  let frozenScrollY=0;
+  function syncViewport(){
+    const vv=window.visualViewport;
+    const h=vv?.height||innerHeight;
+    const top=vv?.offsetTop||0;
+    document.documentElement.style.setProperty('--vv-height',`${Math.round(h)}px`);
+    document.documentElement.style.setProperty('--vv-top',`${Math.round(top)}px`);
+  }
+  function lockPage(){
+    if(document.body.classList.contains('tgai-open'))return;
+    frozenScrollY=scrollY;
+    document.body.style.top=`-${frozenScrollY}px`;
+    document.body.classList.add('tgai-open');
+    syncViewport();
+  }
+  function unlockPage(){
+    if(!document.body.classList.contains('tgai-open'))return;
+    document.body.classList.remove('tgai-open');
+    document.body.style.top='';
+    scrollTo(0,frozenScrollY);
+  }
+  function openMaya(){
+    lockPage();panel?.classList.add('open');panel?.setAttribute('aria-hidden','false');syncViewport();
+  }
+  function closeMaya(){
+    mayaInput?.blur();panel?.classList.remove('open');panel?.setAttribute('aria-hidden','true');unlockPage();
+  }
+  fab?.addEventListener('click',openMaya);cardOpen?.addEventListener('click',openMaya);close?.addEventListener('click',closeMaya);
+  window.visualViewport?.addEventListener('resize',syncViewport,{passive:true});
+  window.visualViewport?.addEventListener('scroll',syncViewport,{passive:true});
+  addEventListener('orientationchange',()=>setTimeout(syncViewport,120),{passive:true});
+
+  function addMessage(text,kind='assistant'){
+    const el=document.createElement('div');el.className=`tgai-msg${kind==='user'?' user':''}`;el.textContent=text;messages?.appendChild(el);if(messages)messages.scrollTop=messages.scrollHeight;
+  }
+  function addTyping(){const el=document.createElement('div');el.className='tgai-typing';el.id='tgaiTyping';el.textContent='Maya is typing…';messages?.appendChild(el);if(messages)messages.scrollTop=messages.scrollHeight}
+  function removeTyping(){$('tgaiTyping')?.remove()}
+  function warmFallback(raw){
+    const q=raw.toLowerCase();
+    if(/hello|hey|^hi\b/.test(q))return'Hi 👋🏽 I’m here. If you’re checking an order, tell me the TTG tracking ID or ask what the current stage means and I’ll walk you through it.';
+    if(/when|eta|how long|days|arrive|delivery/.test(q))return'The timing depends on where the parcel is coming from and whether the seller has already handed it to the shipping company. I can explain the estimate once I know the TTG tracking ID or origin country.';
+    if(/next|what happens/.test(q))return'From the current stage, I’ll tell you the next handoff and what TTG is waiting for. For this example, the shipping company has received the parcel, so the next step is transit toward Zambia.';
+    if(/custom|clearance|duty/.test(q))return'Customs can add time after the international leg. If a customs or local handoff update is saved on the tracking record, I’ll show it here and explain what it means.';
+    if(/receipt|invoice|disclaimer|quote|document/.test(q))return'Any linked TTG receipt, invoice, disclaimer, quote or master transaction reference can resolve the same tracking job. You don’t need the supplier’s private courier number.';
+    if(/fedex|courier|shipping company|seller/.test(q))return'TTG can keep the carrier number internally and use its scans to update your public TTG stage. Clients only need the TTG reference shown on their document.';
+    return'I can help with the parcel stage, what happens next, delivery timing, seller or courier handoffs, customs, and the documents attached to this TTG job. What would you like to know?';
+  }
+  async function askMaya(text){
+    try{
+      const trackingId=normalizeId(trackingInput?.value);
+      const res=await fetch('/api/maya',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({message:text,trackingId})});
+      if(res.ok){const data=await res.json();if(data?.reply)return data.reply}
+    }catch{}
+    return warmFallback(text);
+  }
+  mayaForm?.addEventListener('submit',async e=>{
+    e.preventDefault();const text=mayaInput?.value.trim();if(!text)return;
+    addMessage(text,'user');mayaInput.value='';addTyping();
+    const reply=await askMaya(text);await wait(280);removeTyping();addMessage(reply,'assistant');
+  });
 })();
-function togglePanel(id,force){const el=document.getElementById(id);if(!el)return;const open=typeof force==='boolean'?force:!el.classList.contains('open');el.classList.toggle('open',open);if(id==='maya'&&open)setTimeout(()=>document.getElementById('mayaInput')?.focus(),80)}
