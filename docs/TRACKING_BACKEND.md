@@ -8,9 +8,10 @@ The Worker serves both the static tracking UI and API routes.
 - `GET /api/track?id=TTG-...` -> public tracking lookup
 - `GET /api/client-jobs?phone=...` -> D1 phone lookup for active jobs
 - `POST /api/maya` -> tracking-scoped Maya response
-- `POST /api/admin/jobs/upsert` -> create/update a tracking job
+- `POST /api/admin/transactions/start` -> canonical transaction-start endpoint: create/update the D1 job, aliases and all supplied client/contact phone links
+- `POST /api/admin/jobs/upsert` -> lower-level create/update tracking-job endpoint; also links supplied phone fields
 - `POST /api/admin/jobs/update` -> append a TTG tracking note/stage
-- `POST /api/admin/client-phone/link` -> link one or more client/contact phones to an existing D1 job
+- `POST /api/admin/client-phone/link` -> repair/backfill one or more phone links on an existing D1 job; not the normal creation flow
 - `POST /api/admin/carriers/link` -> link a private carrier number to a TTG job
 - `POST /api/admin/carriers/sync` -> force carrier sync
 - scheduled trigger -> checks active private carrier links every 15 minutes
@@ -23,7 +24,7 @@ Create a D1 database, apply `schema.sql`, and bind it to the Worker as:
 
 D1 is the tracking source of truth. The public UI must not manufacture a tracking record or phone association when D1 does not contain it.
 
-Do not put live customer data or real carrier tracking numbers in frontend code.
+Do not put live customer data or real carrier tracking numbers in frontend code or GitHub migrations.
 
 The public customer lookup uses TTG aliases such as:
 
@@ -35,25 +36,53 @@ The public customer lookup uses TTG aliases such as:
 
 All aliases can point to the same `tracking_jobs` row.
 
+## Transaction start — canonical creation flow
+
+When a new TTG master transaction starts, the creating system should call:
+
+`POST /api/admin/transactions/start`
+
+This is the normal creation boundary for document generation, Hunter and staff automation. It creates/updates the tracking job and immediately links every valid client/contact phone supplied with that same transaction.
+
+Example:
+
+```json
+{
+  "job": {
+    "masterTransactionId": "TTG-TXN-000061",
+    "publicReference": "TTG-RCP-000061",
+    "clientName": "Client name",
+    "itemName": "Laptop part",
+    "serviceType": "Parts Procurement",
+    "route": "USA → Zambia",
+    "currentStage": "intake_received",
+    "client": {
+      "mainPhone": "+260 97x xxx xxx"
+    },
+    "payment": {
+      "senderPhone": "097x xxx xxx"
+    }
+  },
+  "aliases": [
+    "TTG-RCP-000061",
+    "TTG-DOC-000061"
+  ]
+}
+```
+
+The phone linker reads both flat and nested receipt-style fields, including client/customer/business contacts and payment sender contacts. Duplicate representations of the same number are normalized and stored only once.
+
+If no phone is supplied, ID tracking still works but the response reports `phoneLinked: false`; phone tracking cannot exist until a phone is actually part of D1 truth.
+
+`POST /api/admin/client-phone/link` is therefore a correction/backfill tool only. It should not be part of normal day-to-day transaction creation.
+
 ## Client phone lookup
 
 `client_job_links` maps normalized phone numbers to D1 tracking jobs. A job may have more than one phone number and a phone may have more than one active job.
 
 Zambian forms such as `0974716428`, `260974716428`, and `+260 974 716 428` normalize to the same D1 key.
 
-When creating/updating a job, the admin payload may provide multiple numbers, for example:
-
-```json
-{
-  "job": {
-    "masterTransactionId": "TTG-TXN-000060",
-    "publicReference": "TTG-RCP-000060",
-    "clientPhones": ["0976959694", "+260 97 471 6428"]
-  }
-}
-```
-
-The ingestion layer also accepts common single-number fields such as `clientPhone`, `mainPhone`, and `senderPhone` so the client/business contact and payment/contact number can both be attached to the same transaction.
+The transaction-start and upsert ingestion layer accepts arrays and common fields such as `clientPhones`, `clientPhone`, `mainPhone`, `senderPhone`, nested `client.mainPhone`, and nested `payment.senderPhone` so the client/business contact and payment/contact number can both be attached automatically to the same transaction.
 
 A phone search returns only the lightweight list of D1 jobs. The UI then loads one selected job through `/api/track`; transaction details are never merged across jobs.
 
