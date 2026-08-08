@@ -16,11 +16,16 @@
   <path d="m223 159 114-55v102l-114 54Z" fill="url(#side)" stroke="#74401f" stroke-width="2"/>
   <path d="m187 59 34-16 132 52-35 17Z" fill="url(#tape)" opacity=".88"/>
   <path d="m190 145 33 14v101l-33-14Z" fill="url(#tape)" opacity=".82"/>
-  <g transform="translate(119 130) skewY(1)">
-    <rect x="0" y="0" width="72" height="45" rx="3" fill="#f7f7f7" stroke="#c9c9c9"/>
-    <rect x="7" y="8" width="57" height="3" fill="#222"/><rect x="7" y="15" width="2" height="17" fill="#222"/><rect x="12" y="15" width="1" height="17" fill="#222"/><rect x="16" y="15" width="3" height="17" fill="#222"/><rect x="22" y="15" width="1" height="17" fill="#222"/><rect x="26" y="15" width="2" height="17" fill="#222"/><rect x="31" y="15" width="4" height="17" fill="#222"/><rect x="38" y="15" width="1" height="17" fill="#222"/><rect x="42" y="15" width="3" height="17" fill="#222"/><rect x="48" y="15" width="2" height="17" fill="#222"/><rect x="53" y="15" width="1" height="17" fill="#222"/><rect x="57" y="15" width="4" height="17" fill="#222"/>
-    <text x="7" y="40" font-family="Arial,sans-serif" font-size="6" fill="#444">TRACKED / HANDLE WITH CARE</text>
+
+  <!-- Shipping label is kept fully on the front face so it never appears detached from the box. -->
+  <g transform="translate(108 132)">
+    <path d="M0 0 72 30v47L0 48Z" fill="#f7f7f7" stroke="#d0d0d0" stroke-width="1.4"/>
+    <g transform="translate(8 14) skewY(22)" fill="#202020">
+      <rect x="0" y="0" width="2" height="18"/><rect x="5" y="0" width="1" height="18"/><rect x="9" y="0" width="3" height="18"/><rect x="15" y="0" width="1" height="18"/><rect x="19" y="0" width="2" height="18"/><rect x="24" y="0" width="4" height="18"/><rect x="31" y="0" width="1" height="18"/><rect x="35" y="0" width="3" height="18"/><rect x="41" y="0" width="2" height="18"/><rect x="46" y="0" width="1" height="18"/><rect x="50" y="0" width="4" height="18"/>
+      <text x="0" y="27" font-family="Arial,sans-serif" font-size="5" font-weight="700">TRACKED / HANDLE WITH CARE</text>
+    </g>
   </g>
+
   <g transform="translate(239 145) skewY(-25)">
     <text x="0" y="40" font-family="Arial Black,Arial,sans-serif" font-size="42" font-weight="900" fill="#0b2459" letter-spacing="-2">TTG</text>
     <text x="2" y="55" font-family="Arial,sans-serif" font-size="9" font-weight="800" fill="#102b60" letter-spacing="1.2">DIGITAL SOLUTIONS</text>
