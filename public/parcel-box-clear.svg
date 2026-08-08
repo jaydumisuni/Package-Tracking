@@ -1,36 +1,39 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 560" role="img" aria-label="THETECHGUY parcel box">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 560" role="img" aria-label="Tracked parcel box" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
 <defs>
   <linearGradient id="top" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#efbc7a"/><stop offset="0.52" stop-color="#d99a54"/><stop offset="1" stop-color="#bb7338"/></linearGradient>
   <linearGradient id="front" x1="0" y1="0" x2="0.95" y2="1"><stop offset="0" stop-color="#d9954f"/><stop offset="0.58" stop-color="#bc6f36"/><stop offset="1" stop-color="#8f481f"/></linearGradient>
   <linearGradient id="side" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ad602b"/><stop offset="1" stop-color="#6e3215"/></linearGradient>
   <linearGradient id="tape" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f5d29b"/><stop offset="0.5" stop-color="#e7bc7f"/><stop offset="1" stop-color="#c89255"/></linearGradient>
-  <linearGradient id="ghostStroke" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d946ef"/><stop offset="0.48" stop-color="#7c3aed"/><stop offset="1" stop-color="#06d9ff"/></linearGradient>
-  <filter id="shadow" x="-25%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="22" stdDeviation="18" flood-color="#000" flood-opacity=".34"/></filter>
-  <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5"/></filter>
 </defs>
-<ellipse cx="382" cy="495" rx="245" ry="34" fill="#081224" opacity=".32" filter="url(#soft)"/>
-<g filter="url(#shadow)">
-  <path d="M105 168 355 54 648 184 397 309z" fill="url(#top)" stroke="#f4c789" stroke-width="4"/>
-  <path d="M105 168v252l292 111V309z" fill="url(#front)" stroke="#86431d" stroke-width="4"/>
-  <path d="M397 309v222l251-123V184z" fill="url(#side)" stroke="#612b11" stroke-width="4"/>
-  <path d="M254 100 549 230 496 256 199 128z" fill="url(#tape)" opacity=".96"/>
-  <path d="M254 100v67" stroke="#a8703a" stroke-width="5" opacity=".5"/>
-  <path d="M496 256v78" stroke="#825024" stroke-width="5" opacity=".45"/>
-  <path d="M116 180 388 284" stroke="#f0b978" stroke-width="3" opacity=".28"/>
-  <path d="M409 316 635 206" stroke="#d8904c" stroke-width="3" opacity=".28"/>
-  <g transform="translate(142 247) skewY(5)">
-    <rect x="0" y="0" width="204" height="142" rx="10" fill="#fbfcff" stroke="#d7dde8" stroke-width="4"/>
-    <text x="17" y="26" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="700" fill="#162238">THETECHGUY</text>
-    <text x="17" y="43" font-family="Arial,Helvetica,sans-serif" font-size="9" fill="#657084">TRACKED PARCEL</text>
-    <line x1="17" y1="53" x2="187" y2="53" stroke="#d4d9e2" stroke-width="2"/>
-    <text x="17" y="72" font-family="Arial,Helvetica,sans-serif" font-size="8" fill="#6b7485">TTG TRACKING</text>
-    <text x="17" y="87" font-family="Arial,Helvetica,sans-serif" font-size="11" font-weight="700" fill="#1a2537">TTG-TXN</text>
-    <g fill="#111"><rect x="18" y="99" width="3" height="28"/><rect x="24" y="99" width="2" height="28"/><rect x="29" y="99" width="5" height="28"/><rect x="38" y="99" width="2" height="28"/><rect x="44" y="99" width="4" height="28"/><rect x="52" y="99" width="2" height="28"/><rect x="58" y="99" width="6" height="28"/><rect x="68" y="99" width="3" height="28"/><rect x="75" y="99" width="2" height="28"/><rect x="81" y="99" width="5" height="28"/><rect x="90" y="99" width="3" height="28"/><rect x="97" y="99" width="6" height="28"/><rect x="107" y="99" width="2" height="28"/><rect x="113" y="99" width="5" height="28"/><rect x="122" y="99" width="2" height="28"/><rect x="128" y="99" width="4" height="28"/><rect x="136" y="99" width="6" height="28"/><rect x="146" y="99" width="3" height="28"/><rect x="153" y="99" width="2" height="28"/><rect x="159" y="99" width="6" height="28"/><rect x="169" y="99" width="3" height="28"/></g>
+<ellipse cx="382" cy="500" rx="225" ry="20" fill="#000" opacity=".16"/>
+<path d="M105 168 355 54l293 130-251 125z" fill="url(#top)" stroke="#d89a57" stroke-width="3"/>
+<path d="M105 168v252l292 111V309z" fill="url(#front)" stroke="#86431d" stroke-width="3"/>
+<path d="M397 309v222l251-123V184z" fill="url(#side)" stroke="#612b11" stroke-width="3"/>
+<path d="M254 100 549 230l-53 26-297-128z" fill="url(#tape)" opacity=".96"/>
+<path d="M254 100v67" stroke="#a8703a" stroke-width="4" opacity=".5"/>
+<path d="M496 256v78" stroke="#825024" stroke-width="4" opacity=".45"/>
+<path d="M116 180 388 284" stroke="#f0b978" stroke-width="2" opacity=".28"/>
+<path d="M409 316 635 206" stroke="#d8904c" stroke-width="2" opacity=".28"/>
+
+<!-- Main shipping label, aligned to the front carton face -->
+<g transform="translate(142 246) skewY(5)">
+  <rect width="204" height="144" rx="8" fill="#fbfcff" stroke="#d7dde8" stroke-width="3"/>
+  <text x="16" y="24" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="700" fill="#162238">SHIPPING LABEL</text>
+  <text x="16" y="41" font-family="Arial,Helvetica,sans-serif" font-size="9" fill="#657084">TRACKED PARCEL</text>
+  <line x1="16" y1="51" x2="188" y2="51" stroke="#d4d9e2" stroke-width="2"/>
+  <text x="16" y="69" font-family="Arial,Helvetica,sans-serif" font-size="8" fill="#6b7485">REFERENCE</text>
+  <text x="16" y="84" font-family="Arial,Helvetica,sans-serif" font-size="11" font-weight="700" fill="#1a2537">TTG-TXN</text>
+  <g fill="#111">
+    <rect x="18" y="98" width="3" height="29"/><rect x="24" y="98" width="2" height="29"/><rect x="29" y="98" width="5" height="29"/><rect x="38" y="98" width="2" height="29"/><rect x="44" y="98" width="4" height="29"/><rect x="52" y="98" width="2" height="29"/><rect x="58" y="98" width="6" height="29"/><rect x="68" y="98" width="3" height="29"/><rect x="75" y="98" width="2" height="29"/><rect x="81" y="98" width="5" height="29"/><rect x="90" y="98" width="3" height="29"/><rect x="97" y="98" width="6" height="29"/><rect x="107" y="98" width="2" height="29"/><rect x="113" y="98" width="5" height="29"/><rect x="122" y="98" width="2" height="29"/><rect x="128" y="98" width="4" height="29"/><rect x="136" y="98" width="6" height="29"/><rect x="146" y="98" width="3" height="29"/><rect x="153" y="98" width="2" height="29"/><rect x="159" y="98" width="6" height="29"/><rect x="169" y="98" width="3" height="29"/>
   </g>
-  <g transform="translate(456 289) scale(.72) skewY(-6)" opacity=".96">
-    <path d="M78 132c-16-13-4-36 5-56 7-14 9-29 9-46 0-55 31-98 76-98 44 0 76 43 76 98v95c0 17-14 23-27 15-7-5-13-13-18-23-4 19-17 31-33 31-15 0-26-10-33-26-7 17-20 27-35 25-12-1-20-6-26-15z" fill="#13101e" stroke="url(#ghostStroke)" stroke-width="12" stroke-linejoin="round"/>
-    <path d="M119 39c7-9 26-10 41-4 10 4 15 4 25 0 18-7 39-3 46 8 5 9 1 30-5 38-8 11-28 12-41 4-8-5-13-5-21 0-14 8-34 6-42-4-6-9-10-32-3-42z" fill="#121a31" stroke="#fff" stroke-width="10" stroke-linejoin="round"/>
-    <path d="M161 56h18" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
-  </g>
+</g>
+
+<!-- Small handling sticker, aligned to the side face; no brand logo -->
+<g transform="translate(470 329) skewY(-25)">
+  <rect width="118" height="64" rx="7" fill="#fff7df" stroke="#e0b66e" stroke-width="3"/>
+  <path d="M20 15h20v24H20zM24 11h12v6H24z" fill="none" stroke="#9d4d21" stroke-width="3"/>
+  <path d="M29 42v8M22 50h14" stroke="#9d4d21" stroke-width="3" stroke-linecap="round"/>
+  <text x="50" y="25" font-family="Arial,Helvetica,sans-serif" font-size="11" font-weight="700" fill="#9d4d21">HANDLE</text>
+  <text x="50" y="41" font-family="Arial,Helvetica,sans-serif" font-size="11" font-weight="700" fill="#9d4d21">WITH CARE</text>
 </g>
 </svg>
