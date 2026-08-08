@@ -5,7 +5,7 @@ const $=id=>document.getElementById(id),NOT_DUE='Not yet due — confirmed at Za
 let fixing=false;
 function setText(el,value){if(el&&el.textContent!==value)el.textContent=value}
 function setHtml(el,value){if(el&&el.innerHTML!==value)el.innerHTML=value}
-function inZambia(){return /(zambia|lusaka|kitwe|ndola|livingstone|\bzm\b)/i.test(($('summaryLocation')?.textContent||'')+' '+($('route')?.textContent||''))}
+function inZambia(){return /(zambia|lusaka|kitwe|ndola|livingstone|\bzm\b)/i.test($('summaryLocation')?.textContent||'')}
 function steps(){return[...document.querySelectorAll('#steps .step[data-stage]')]}
 function visualStage(){let current=document.querySelector('#steps .step.current')?.dataset.stage||'';if(current==='awaiting_shipping_cost'&&!inZambia())current='shipping_company_received';return current}
 function relabel(){steps().forEach(el=>{const st=el.dataset.stage,ix=ORDER.indexOf(st);if(ix<0)return;const order=String(ix);if(el.style.order!==order)el.style.order=order;const i=el.querySelector('i');if(i&&st!=='completed')setText(i,String(ix+1));setHtml(el.querySelector('span'),LABEL[st])})}
