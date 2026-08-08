@@ -1,32 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 500" role="img" aria-label="THETECHGUY tracked parcel">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 560" role="img" aria-label="THETECHGUY parcel box">
 <defs>
- <linearGradient id="top" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e1a668"/><stop offset="1" stop-color="#bd7436"/></linearGradient>
- <linearGradient id="front" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c98645"/><stop offset="1" stop-color="#975121"/></linearGradient>
- <linearGradient id="side" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a65d2a"/><stop offset="1" stop-color="#733816"/></linearGradient>
- <linearGradient id="neon" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b941ff"/><stop offset=".55" stop-color="#7049ff"/><stop offset="1" stop-color="#08d9ff"/></linearGradient>
- <filter id="shadow" x="-25%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="18" stdDeviation="15" flood-color="#000" flood-opacity=".28"/></filter>
+  <linearGradient id="top" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#efbc7a"/><stop offset="0.52" stop-color="#d99a54"/><stop offset="1" stop-color="#bb7338"/></linearGradient>
+  <linearGradient id="front" x1="0" y1="0" x2="0.95" y2="1"><stop offset="0" stop-color="#d9954f"/><stop offset="0.58" stop-color="#bc6f36"/><stop offset="1" stop-color="#8f481f"/></linearGradient>
+  <linearGradient id="side" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ad602b"/><stop offset="1" stop-color="#6e3215"/></linearGradient>
+  <linearGradient id="tape" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f5d29b"/><stop offset="0.5" stop-color="#e7bc7f"/><stop offset="1" stop-color="#c89255"/></linearGradient>
+  <linearGradient id="ghostStroke" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d946ef"/><stop offset="0.48" stop-color="#7c3aed"/><stop offset="1" stop-color="#06d9ff"/></linearGradient>
+  <filter id="shadow" x="-25%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="22" stdDeviation="18" flood-color="#000" flood-opacity=".34"/></filter>
+  <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5"/></filter>
 </defs>
+<ellipse cx="382" cy="495" rx="245" ry="34" fill="#081224" opacity=".32" filter="url(#soft)"/>
 <g filter="url(#shadow)">
- <path d="M92 155 316 48l228 103-225 112z" fill="url(#top)" stroke="#f2c18b" stroke-width="3"/>
- <path d="M92 155v222l227 106V263z" fill="url(#front)" stroke="#8e4a20" stroke-width="3"/>
- <path d="M319 263v220l225-109V151z" fill="url(#side)" stroke="#683211" stroke-width="3"/>
- <path d="M236 86 463 190l-65 33L170 117z" fill="#ebbe80" opacity=".95"/>
- <path d="M236 86v62" stroke="#8c5128" stroke-width="5" opacity=".52"/>
- <g transform="translate(128 222) skewY(-1.5)">
-  <rect width="168" height="126" rx="9" fill="#fbfcff" stroke="#d4dae4" stroke-width="3"/>
-  <text x="16" y="23" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#142035">THETECHGUY</text>
-  <text x="16" y="40" font-family="Arial,sans-serif" font-size="9" fill="#59677b">TRACKED PARCEL</text>
-  <line x1="16" y1="49" x2="151" y2="49" stroke="#d0d6df"/>
-  <text x="16" y="66" font-family="Arial,sans-serif" font-size="8" fill="#6a7484">TTG TRACKING</text>
-  <g fill="#172033" transform="translate(16 74)">
-   <rect x="0" width="3" height="31"/><rect x="6" width="5" height="31"/><rect x="15" width="2" height="31"/><rect x="21" width="6" height="31"/><rect x="31" width="3" height="31"/><rect x="38" width="2" height="31"/><rect x="44" width="7" height="31"/><rect x="55" width="3" height="31"/><rect x="62" width="5" height="31"/><rect x="71" width="2" height="31"/><rect x="77" width="6" height="31"/><rect x="87" width="3" height="31"/><rect x="94" width="7" height="31"/><rect x="105" width="2" height="31"/><rect x="111" width="5" height="31"/><rect x="120" width="3" height="31"/><rect x="127" width="7" height="31"/>
+  <path d="M105 168 355 54 648 184 397 309z" fill="url(#top)" stroke="#f4c789" stroke-width="4"/>
+  <path d="M105 168v252l292 111V309z" fill="url(#front)" stroke="#86431d" stroke-width="4"/>
+  <path d="M397 309v222l251-123V184z" fill="url(#side)" stroke="#612b11" stroke-width="4"/>
+  <path d="M254 100 549 230 496 256 199 128z" fill="url(#tape)" opacity=".96"/>
+  <path d="M254 100v67" stroke="#a8703a" stroke-width="5" opacity=".5"/>
+  <path d="M496 256v78" stroke="#825024" stroke-width="5" opacity=".45"/>
+  <path d="M116 180 388 284" stroke="#f0b978" stroke-width="3" opacity=".28"/>
+  <path d="M409 316 635 206" stroke="#d8904c" stroke-width="3" opacity=".28"/>
+  <g transform="translate(142 247) skewY(5)">
+    <rect x="0" y="0" width="204" height="142" rx="10" fill="#fbfcff" stroke="#d7dde8" stroke-width="4"/>
+    <text x="17" y="26" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="700" fill="#162238">THETECHGUY</text>
+    <text x="17" y="43" font-family="Arial,Helvetica,sans-serif" font-size="9" fill="#657084">TRACKED PARCEL</text>
+    <line x1="17" y1="53" x2="187" y2="53" stroke="#d4d9e2" stroke-width="2"/>
+    <text x="17" y="72" font-family="Arial,Helvetica,sans-serif" font-size="8" fill="#6b7485">TTG TRACKING</text>
+    <text x="17" y="87" font-family="Arial,Helvetica,sans-serif" font-size="11" font-weight="700" fill="#1a2537">TTG-TXN</text>
+    <g fill="#111"><rect x="18" y="99" width="3" height="28"/><rect x="24" y="99" width="2" height="28"/><rect x="29" y="99" width="5" height="28"/><rect x="38" y="99" width="2" height="28"/><rect x="44" y="99" width="4" height="28"/><rect x="52" y="99" width="2" height="28"/><rect x="58" y="99" width="6" height="28"/><rect x="68" y="99" width="3" height="28"/><rect x="75" y="99" width="2" height="28"/><rect x="81" y="99" width="5" height="28"/><rect x="90" y="99" width="3" height="28"/><rect x="97" y="99" width="6" height="28"/><rect x="107" y="99" width="2" height="28"/><rect x="113" y="99" width="5" height="28"/><rect x="122" y="99" width="2" height="28"/><rect x="128" y="99" width="4" height="28"/><rect x="136" y="99" width="6" height="28"/><rect x="146" y="99" width="3" height="28"/><rect x="153" y="99" width="2" height="28"/><rect x="159" y="99" width="6" height="28"/><rect x="169" y="99" width="3" height="28"/></g>
   </g>
-  <text x="16" y="119" font-family="Arial,sans-serif" font-size="8" fill="#68758d">tracking.thetechguyds.com</text>
- </g>
- <g transform="translate(383 270)">
-  <path d="M0 17c0-39 27-66 63-66 37 0 65 29 65 69v81c0 19-15 29-30 20-8-5-15-14-20-25-6 19-18 30-34 30-15 0-27-9-34-26-6 16-17 26-31 26-16 0-27-12-27-29V37C-28 26-17 18 0 17z" fill="#070817" stroke="url(#neon)" stroke-width="7" stroke-linejoin="round"/>
-  <path d="M34 8c10-11 31-13 47-5 10 5 15 5 26 0 19-8 42-4 49 9 6 10 1 32-5 41-8 12-30 13-44 4-8-5-14-5-22 0-14 9-36 7-44-5-7-10-11-35-7-44z" fill="#101936" stroke="#f8fbff" stroke-width="8"/>
-  <path d="M82 28h18" stroke="#f8fbff" stroke-width="5" stroke-linecap="round"/>
- </g>
+  <g transform="translate(456 289) scale(.72) skewY(-6)" opacity=".96">
+    <path d="M78 132c-16-13-4-36 5-56 7-14 9-29 9-46 0-55 31-98 76-98 44 0 76 43 76 98v95c0 17-14 23-27 15-7-5-13-13-18-23-4 19-17 31-33 31-15 0-26-10-33-26-7 17-20 27-35 25-12-1-20-6-26-15z" fill="#13101e" stroke="url(#ghostStroke)" stroke-width="12" stroke-linejoin="round"/>
+    <path d="M119 39c7-9 26-10 41-4 10 4 15 4 25 0 18-7 39-3 46 8 5 9 1 30-5 38-8 11-28 12-41 4-8-5-13-5-21 0-14 8-34 6-42-4-6-9-10-32-3-42z" fill="#121a31" stroke="#fff" stroke-width="10" stroke-linejoin="round"/>
+    <path d="M161 56h18" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+  </g>
 </g>
 </svg>
