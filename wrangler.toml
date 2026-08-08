@@ -6,6 +6,10 @@ compatibility_date = "2026-08-08"
 directory = "./public"
 binding = "ASSETS"
 
+[vars]
+HANDOVER_SHEET_ID = "1KD4lu32bMWNlyKWohbNDQPivDEvVN-7_VcWq0Lj1OO4"
+HANDOVER_SHEET_RANGE = "Handover Register!A:L"
+
 [observability]
 enabled = true
 
