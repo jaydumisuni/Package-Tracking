@@ -7,116 +7,63 @@
 <title>THETECHGUY Tracking</title>
 <link rel="icon" href="https://thetechguyds.com/favicon.ico">
 <link rel="apple-touch-icon" href="https://thetechguyds.com/apple-touch-icon.png">
-<link rel="stylesheet" href="/styles.css?v=20260808c">
+<link rel="stylesheet" href="/styles.css?v=20260808d">
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="https://thetechguyds.com" aria-label="THETECHGUY DIGITAL SOLUTIONS">
-    <img src="https://thetechguyds.com/assets/ttg-asset-002-8f95ed29fe9a.png" alt="THETECHGUY DIGITAL SOLUTIONS">
-  </a>
-  <nav class="nav" aria-label="Main navigation">
-    <a class="active" href="#track">⌕ Track</a>
-    <a href="https://thetechguyds.com/#services">Services</a>
-    <a href="https://thetechguyds.com/#support">Support</a>
-    <a href="https://thetechguyds.com/#about">About TTG</a>
-  </nav>
+  <a class="brand" href="https://thetechguyds.com" aria-label="THETECHGUY DIGITAL SOLUTIONS"><img src="https://thetechguyds.com/assets/ttg-asset-002-8f95ed29fe9a.png" alt="THETECHGUY DIGITAL SOLUTIONS"></a>
+  <nav class="nav" aria-label="Main navigation"><a class="active" href="#track">⌕ Track</a><a href="https://thetechguyds.com/#services">Services</a><a href="https://thetechguyds.com/#support">Support</a><a href="https://thetechguyds.com/#about">About TTG</a></nav>
   <a class="portal-btn" href="/client-portal.html">👤 <span>Client Portal</span></a>
 </header>
 
 <main class="page" id="track">
   <section class="hero">
-    <picture class="parcel-wrap" aria-hidden="true">
-      <img src="/parcel.svg" alt="" class="parcel-img">
-    </picture>
+    <picture class="parcel-wrap" aria-hidden="true"><img src="/parcel.svg" alt="" class="parcel-img"></picture>
     <div class="hero-copy">
       <h1>Track your <span>gadget, parcel or order</span></h1>
       <p>Enter your TTG receipt, invoice, disclaimer, quote or master tracking ID to view the latest job progress.</p>
-      <form class="search" id="searchForm">
-        <label class="search-input">⌕ <input id="trackingInput" value="TTG-RCP-000060" aria-label="Tracking ID" autocomplete="off" autocapitalize="characters"></label>
-        <button class="track-btn" type="submit">Track <span>→</span></button>
-      </form>
+      <form class="search" id="searchForm"><label class="search-input">⌕ <input id="trackingInput" placeholder="TTG-RCP-000060" aria-label="Tracking ID" autocomplete="off" autocapitalize="characters"></label><button class="track-btn" type="submit">Track <span>→</span></button></form>
       <div class="search-note">Use any TTG receipt, invoice, disclaimer, quote, or tracking ID.</div>
-      <div class="chips" aria-label="Example tracking IDs">
-        <b>Examples:</b>
-        <span>TTG-RCP-000060</span><span>TTG-INV-000060</span><span>TTG-DOC-000060</span><span>TTG-QTE-000060</span><span>TTG-TXN-000060</span>
-      </div>
+      <div class="chips" aria-label="Example tracking IDs"><b>Examples:</b><span>TTG-RCP-000060</span><span>TTG-INV-000060</span><span>TTG-DOC-000060</span><span>TTG-QTE-000060</span><span>TTG-TXN-000060</span></div>
     </div>
   </section>
 
-  <section class="dashboard" id="resultArea">
+  <section class="dashboard" id="resultArea" hidden>
     <div class="maincol">
       <section class="card result-card">
-        <div class="result-head"><span class="result-icon">▣</span><b>Tracking result for: <span id="resultRef">TTG-RCP-000060</span></b><span class="found" id="foundBadge">Found</span><span class="updated" id="lastUpdated">Last updated: Today, 11:31 AM ↻</span></div>
+        <div class="result-head"><span class="result-icon">▣</span><b>Tracking result for: <span id="resultRef">—</span></b><span class="found" id="foundBadge">Found</span><span class="updated" id="lastUpdated">Last updated: —</span></div>
         <div class="detail-grid">
-          <div class="detail"><span class="icon">♙</span><div><small>Client / Customer</small><b id="clientName">Weston Tembo</b></div></div>
-          <div class="detail"><span class="icon">⌁</span><div><small>Condition</small><b id="condition">Deadboot / no boot</b></div></div>
-          <div class="detail"><span class="icon">▤</span><div><small>Tracking Reference</small><b class="blue" id="publicReference">TTG-RCP-000060</b></div></div>
-          <div class="detail"><span class="icon">🇺🇸</span><div><small>Route / Origin</small><b id="route">USA <span class="route-arrow">→</span> Zambia 🇿🇲</b></div></div>
-          <div class="detail"><span class="icon">▱</span><div><small>Device / Item</small><b id="deviceItem">Laptop</b></div></div>
-          <div class="detail"><span class="icon">🛠</span><div><small>Service Type</small><b id="serviceType">Parts Procurement Deposit</b></div></div>
-          <div class="detail"><span class="icon">▱</span><div><small>Master Tracking ID</small><b class="purple" id="masterId">TTG-TXN-000060</b></div></div>
-          <div class="detail"><span class="icon">▣</span><div><small>Amount Received</small><b class="green" id="amountReceived">ZMW 1,700.00</b><small class="second-label">Payment Method</small><b id="paymentMethod">Mobile Money</b></div></div>
+          <div class="detail"><span class="icon">♙</span><div><small>Client / Customer</small><b id="clientName">—</b></div></div>
+          <div class="detail"><span class="icon">⌁</span><div><small>Condition</small><b id="condition">—</b></div></div>
+          <div class="detail"><span class="icon">▤</span><div><small>Tracking Reference</small><b class="blue" id="publicReference">—</b></div></div>
+          <div class="detail"><span class="icon">◉</span><div><small>Route / Origin</small><b id="route">—</b></div></div>
+          <div class="detail"><span class="icon">▱</span><div><small>Device / Item</small><b id="deviceItem">—</b></div></div>
+          <div class="detail"><span class="icon">🛠</span><div><small>Service Type</small><b id="serviceType">—</b></div></div>
+          <div class="detail"><span class="icon">▱</span><div><small>Master Tracking ID</small><b class="purple" id="masterId">—</b></div></div>
+          <div class="detail"><span class="icon">▣</span><div><small>Amount Received</small><b class="green" id="amountReceived">—</b><small class="second-label">Payment Method</small><b id="paymentMethod">—</b></div></div>
         </div>
       </section>
 
       <section class="card progress-card" id="jobProgress">
         <h2>Job Progress</h2>
         <div class="steps" id="steps">
-          <div class="step done" data-stage="intake_received"><i>✓</i><span>Intake<br>received</span><small>Completed</small></div>
-          <div class="step done" data-stage="disclaimer_confirmed"><i>✓</i><span>Disclaimer<br>confirmed</span><small>Completed</small></div>
-          <div class="step done" data-stage="deposit_received"><i>✓</i><span>Deposit<br>received</span><small>Completed</small></div>
-          <div class="step done" data-stage="parts_sourcing"><i>✓</i><span>Parts<br>sourcing</span><small>Completed</small></div>
-          <div class="step done" data-stage="parts_ordered"><i>✓</i><span>Parts<br>ordered</span><small>Completed</small></div>
-          <div class="step done" data-stage="awaiting_seller_shipment"><i>✓</i><span>Awaiting seller<br>shipment</span><small>Completed</small></div>
-          <div class="step done" data-stage="seller_shipped"><i>✓</i><span>Seller<br>shipped</span><small>Completed</small></div>
-          <div class="step current" data-stage="shipping_company_received"><i>🚚</i><span>Shipping company<br>received</span><small>In progress</small></div>
-          <div class="step" data-stage="in_transit_to_zambia"><i>✈</i><span>In transit to<br>Zambia</span><small>Pending</small></div>
-          <div class="step" data-stage="received_in_zambia"><i>▣</i><span>Received in Zambia /<br>local shipping received</span><small>Pending</small></div>
-          <div class="step" data-stage="parts_received_by_ttg"><i>□</i><span>Parts received<br>by TTG</span><small>Pending</small></div>
-          <div class="step" data-stage="repair_in_progress"><i>🛠</i><span>Repair in<br>progress</span><small>Pending</small></div>
-          <div class="step" data-stage="testing"><i>⌁</i><span>Testing</span><small>Pending</small></div>
-          <div class="step" data-stage="ready_for_collection"><i>♧</i><span>Ready for<br>collection</span><small>Pending</small></div>
-          <div class="step" data-stage="completed"><i>✓</i><span>Completed</span><small>Pending</small></div>
+          <div class="step" data-stage="intake_received"><i>1</i><span>Intake<br>received</span><small>Pending</small></div><div class="step" data-stage="disclaimer_confirmed"><i>2</i><span>Disclaimer<br>confirmed</span><small>Pending</small></div><div class="step" data-stage="deposit_received"><i>3</i><span>Deposit<br>received</span><small>Pending</small></div><div class="step" data-stage="parts_sourcing"><i>4</i><span>Parts<br>sourcing</span><small>Pending</small></div><div class="step" data-stage="parts_ordered"><i>5</i><span>Parts<br>ordered</span><small>Pending</small></div><div class="step" data-stage="awaiting_seller_shipment"><i>6</i><span>Awaiting seller<br>shipment</span><small>Pending</small></div><div class="step" data-stage="seller_shipped"><i>7</i><span>Seller<br>shipped</span><small>Pending</small></div><div class="step" data-stage="shipping_company_received"><i>8</i><span>Shipping company<br>received</span><small>Pending</small></div><div class="step" data-stage="in_transit_to_zambia"><i>9</i><span>In transit to<br>Zambia</span><small>Pending</small></div><div class="step" data-stage="received_in_zambia"><i>10</i><span>Received in Zambia /<br>local shipping received</span><small>Pending</small></div><div class="step" data-stage="parts_received_by_ttg"><i>11</i><span>Parts received<br>by TTG</span><small>Pending</small></div><div class="step" data-stage="repair_in_progress"><i>12</i><span>Repair in<br>progress</span><small>Pending</small></div><div class="step" data-stage="testing"><i>13</i><span>Testing</span><small>Pending</small></div><div class="step" data-stage="ready_for_collection"><i>14</i><span>Ready for<br>collection</span><small>Pending</small></div><div class="step" data-stage="completed"><i>✓</i><span>Completed</span><small>Pending</small></div>
         </div>
-        <div class="status"><div class="status-icon">i</div><div><b>Current status: <strong id="currentStatus">Shipping company received</strong></b><p id="statusNote">The seller has shipped the parcel from the USA. The shipping company has received it, and transit to Zambia is the next stage.</p></div></div>
+        <div class="status"><div class="status-icon">i</div><div><b>Current status: <strong id="currentStatus">—</strong></b><p id="statusNote">—</p></div></div>
       </section>
 
-      <section class="lower-grid">
-        <div class="card update-card"><div class="update-title">🔊 Latest Update <span id="updateBadge">In Progress</span></div><p id="latestUpdate"><b>Today, 11:31 AM · USA</b><br>The seller has shipped the parcel and the shipping company has received it in the USA. Tracking will continue as the parcel moves.</p><strong class="source">Tracking Source: TTG / internal carrier monitoring</strong></div>
-        <div class="card docs-card"><h2>▤ Important Documents</h2><p class="fine">View documents linked to this transaction.</p><div class="doc-links"><button type="button">Receipt · TTG-RCP-000060</button><button type="button">Disclaimer · TTG-DOC-000060</button></div></div>
-      </section>
+      <section class="lower-grid"><div class="card update-card"><div class="update-title">🔊 Latest Update <span id="updateBadge">Tracking</span></div><p id="latestUpdate">—</p><strong class="source">Tracking Source: TTG / internal carrier monitoring</strong></div><div class="card docs-card"><h2>▤ Important Documents</h2><p class="fine">Documents linked to this transaction appear here when available.</p><div class="doc-links"><button type="button">Receipt</button><button type="button">Disclaimer</button></div></div></section>
     </div>
 
-    <aside class="sidebar">
-      <section class="card summary-card"><h2>▤ Tracking Summary</h2><div class="summary"><span>Reference</span><b id="summaryReference">TTG-RCP-000060</b><span>Master ID</span><b id="summaryMaster">TTG-TXN-000060</b><span>Route</span><b class="blue" id="summaryRoute">USA → Zambia</b><span>Status</span><b class="blue" id="summaryStatus">Shipping company received</b><span>Last Update</span><b id="summaryUpdated">Today, 11:31 AM</b><span>Location</span><b id="summaryLocation">USA</b><span>Next Update</span><b>Next scan / handoff</b></div></section>
-      <section class="card maya-card"><div><h2>❔ Need help?</h2><p>Maya can explain this parcel status, what happens next, shipping stages, documents, customs and delivery guidance.</p><button class="maya-open" id="mayaCardOpen" type="button">Open Maya 💬</button></div><div class="maya-side"><img src="https://thetechguyds.com/assets/chat/maya-avatar.webp" alt="Maya"><b>Maya</b></div></section>
-    </aside>
+    <aside class="sidebar"><section class="card summary-card"><h2>▤ Tracking Summary</h2><div class="summary"><span>Reference</span><b id="summaryReference">—</b><span>Master ID</span><b id="summaryMaster">—</b><span>Route</span><b class="blue" id="summaryRoute">—</b><span>Status</span><b class="blue" id="summaryStatus">—</b><span>Last Update</span><b id="summaryUpdated">—</b><span>Location</span><b id="summaryLocation">—</b><span>Next Update</span><b>Next scan / handoff</b></div></section><section class="card maya-card"><div><h2>❔ Need help?</h2><p>Maya can explain this parcel status, what happens next, shipping stages, documents, customs and delivery guidance.</p><button class="maya-open" id="mayaCardOpen" type="button">Open Maya 💬</button></div><div class="maya-side"><img src="https://thetechguyds.com/assets/chat/maya-avatar.webp" alt="Maya"><b>Maya</b></div></section></aside>
   </section>
 </main>
 
 <footer class="footer"><div>◈ <b>Secure. Private. Trusted.</b><small>Your public tracking view does not expose internal supplier/carrier references.</small></div><div>✓ <b>Progress updates</b><small>Follow each TTG stage from order to completion.</small></div><div>◉ <b>Transparent & Reliable</b><small>Clear status, handoffs and customer-facing notes.</small></div><div>◎ <b>Powered by THETECHGUY DIGITAL SOLUTIONS</b><small>Fairytale Business — Make a wish, we sort it.</small></div><strong>tracking.thetechguyds.com</strong></footer>
 
-<div class="tracking-overlay" id="trackingOverlay" aria-hidden="true">
-  <div class="tracking-loader">
-    <img src="/parcel.svg" alt="">
-    <div class="scan-line"></div>
-    <h2>Tracking your TTG job…</h2>
-    <p>Checking the latest saved progress and shipping handoff.</p>
-  </div>
-</div>
+<div class="tracking-overlay" id="trackingOverlay" aria-hidden="true"><div class="tracking-loader"><img src="/parcel.svg" alt=""><div class="scan-line"></div><h2>Tracking your TTG job…</h2><p>Checking the latest saved progress and shipping handoff.</p></div></div>
 
-<div id="tgai-root">
-  <button id="tgai-fab" type="button" aria-label="Open Maya"><img src="https://thetechguyds.com/assets/ttg-asset-045-1f0dbae6eeb1.webp" alt="Maya help desk"></button>
-  <section id="tgai-panel" aria-label="Maya assistant" aria-hidden="true">
-    <div class="tgai-head">
-      <div class="tgai-head-brand"><img src="https://thetechguyds.com/assets/chat/maya-avatar.webp" alt="Maya"><div><strong>Maya</strong><small><i></i>Live · THETECHGUY front desk</small></div></div>
-      <button id="tgai-close" type="button">Close</button>
-    </div>
-    <div class="tgai-body" id="tgaiMessages"><div class="tgai-msg">Hey, how can I help today?</div></div>
-    <form class="tgai-input" id="tgaiForm"><input id="tgaiInput" autocomplete="off" placeholder="Type what you need..." aria-label="Message Maya"><button type="submit">Send</button></form>
-  </section>
-</div>
-
-<script src="/app.js?v=20260808c"></script>
+<div id="tgai-root"><button id="tgai-fab" type="button" aria-label="Open Maya"><img src="https://thetechguyds.com/assets/ttg-asset-045-1f0dbae6eeb1.webp" alt="Maya help desk"></button><section id="tgai-panel" aria-label="Maya assistant" aria-hidden="true"><div class="tgai-head"><div class="tgai-head-brand"><img src="https://thetechguyds.com/assets/chat/maya-avatar.webp" alt="Maya"><div><strong>Maya</strong><small><i></i>Live · THETECHGUY front desk</small></div></div><button id="tgai-close" type="button">Close</button></div><div class="tgai-body" id="tgaiMessages"><div class="tgai-msg">Hey, how can I help today?</div></div><form class="tgai-input" id="tgaiForm"><input id="tgaiInput" autocomplete="off" placeholder="Type what you need..." aria-label="Message Maya"><button type="submit">Send</button></form></section></div>
+<script src="/app.js?v=20260808d"></script>
 </body>
 </html>
