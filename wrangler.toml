@@ -6,6 +6,11 @@ compatibility_date = "2026-08-08"
 directory = "./public"
 binding = "ASSETS"
 
+[[d1_databases]]
+binding = "TRACKING_DB"
+database_name = "package-tracking-db"
+database_id = "2e43551b-bb2b-44d3-a93a-1f5fe0d89812"
+
 [vars]
 HANDOVER_SHEET_ID = "1KD4lu32bMWNlyKWohbNDQPivDEvVN-7_VcWq0Lj1OO4"
 HANDOVER_SHEET_RANGE = "Handover Register!A:L"
