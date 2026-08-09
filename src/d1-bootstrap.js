@@ -1,9 +1,7 @@
+import {requireOwnerAdmin} from './admin-auth.js';
+
 const H={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
 const J=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:H});
-
-function isAdmin(request,env){
-  return Boolean(env.ADMIN_TOKEN)&&(request.headers.get("authorization")||"")===`Bearer ${env.ADMIN_TOKEN}`;
-}
 
 const REQUIRED=['tracking_jobs','tracking_aliases','tracking_updates','carrier_shipments','handover_tokens','client_job_links'];
 
@@ -108,7 +106,8 @@ export async function handleD1Bootstrap(request,env){
   }
 
   if(url.pathname==='/api/admin/d1/bootstrap'&&request.method==='POST'){
-    if(!isAdmin(request,env))return J({ok:false,error:'unauthorized'},401);
+    const denied=await requireOwnerAdmin(request,env);
+    if(denied)return denied;
     if(!env.TRACKING_DB)return J({ok:false,error:'TRACKING_DB is not bound'},503);
     try{
       for(const sql of SCHEMA)await env.TRACKING_DB.prepare(sql).run();
