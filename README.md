@@ -24,8 +24,8 @@ Public tracking uses TTG references only. Supplier and carrier tracking numbers 
 - `GET /api/track?id=TTG-...` — client tracking lookup
 - phone-number lookup when the client phone is linked to the D1 job
 - `POST /api/maya` — tracking-scoped Maya assistance
-- authenticated admin endpoints — create/update jobs, notes and private carrier links
-- document/Hunter workflows create or reuse one master transaction for trackable jobs
+- authenticated admin endpoints — reserve master transaction IDs, create/update jobs, notes and private carrier links
+- document/Hunter workflows reserve or reuse one D1-owned master transaction for trackable jobs
 - scheduled carrier sync — checks active carrier links when provider credentials are configured
 
 The first carrier leg can represent seller → shipping company/forwarder. For that leg, the public TTG stage remains `seller_shipped` while the parcel is moving through the seller's carrier; when the carrier reports delivery to the shipping company/forwarder, TTG can advance automatically to `shipping_company_received`.
