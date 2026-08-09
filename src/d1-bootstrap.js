@@ -1,12 +1,13 @@
 const H={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
 const J=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:H});
 
-async function isAdmin(request,env){
+function isAdmin(request,env){
   return Boolean(env.ADMIN_TOKEN)&&(request.headers.get("authorization")||"")===`Bearer ${env.ADMIN_TOKEN}`;
 }
 
+const REQUIRED=['tracking_jobs','tracking_aliases','tracking_updates','carrier_shipments','handover_tokens','client_job_links'];
+
 const SCHEMA=[
-`PRAGMA foreign_keys = ON`,
 `CREATE TABLE IF NOT EXISTS tracking_jobs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   master_transaction_id TEXT NOT NULL UNIQUE,
@@ -91,23 +92,23 @@ const SCHEMA=[
 ];
 
 async function verify(db){
-  const required=['tracking_jobs','tracking_aliases','tracking_updates','carrier_shipments','handover_tokens','client_job_links'];
   const rows=(await db.prepare(`SELECT name FROM sqlite_master WHERE type='table'`).all()).results||[];
   const names=new Set(rows.map(r=>r.name));
-  const tables=Object.fromEntries(required.map(name=>[name,names.has(name)]));
-  return {ready:required.every(name=>names.has(name)),tables};
+  const tables=Object.fromEntries(REQUIRED.map(name=>[name,names.has(name)]));
+  const missing=REQUIRED.filter(name=>!names.has(name));
+  return {ready:missing.length===0,tables,missing};
 }
 
 export async function handleD1Bootstrap(request,env){
   const url=new URL(request.url);
   if(url.pathname==='/api/d1/status'&&request.method==='GET'){
-    if(!env.TRACKING_DB)return J({ok:true,bound:false,ready:false});
+    if(!env.TRACKING_DB)return J({ok:true,bound:false,ready:false,missing:REQUIRED});
     try{return J({ok:true,bound:true,...await verify(env.TRACKING_DB)})}
-    catch(error){return J({ok:false,bound:true,ready:false,error:'D1 status check failed'},503)}
+    catch(error){console.error('D1 status failed',String(error));return J({ok:false,bound:true,ready:false,error:'D1 status check failed'},503)}
   }
 
   if(url.pathname==='/api/admin/d1/bootstrap'&&request.method==='POST'){
-    if(!await isAdmin(request,env))return J({ok:false,error:'unauthorized'},401);
+    if(!isAdmin(request,env))return J({ok:false,error:'unauthorized'},401);
     if(!env.TRACKING_DB)return J({ok:false,error:'TRACKING_DB is not bound'},503);
     try{
       for(const sql of SCHEMA)await env.TRACKING_DB.prepare(sql).run();
