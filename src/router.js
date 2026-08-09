@@ -7,6 +7,7 @@ import {handlePublicMaya} from "./maya-public.js";
 import {handleD1Bootstrap} from "./d1-bootstrap.js";
 import {handleOpsAuth} from "./ops-auth.js";
 import {handleOpsApi} from "./ops-api.js";
+import {handleTransactionReserve} from "./transaction-reserve.js";
 
 const JSON_HEADERS={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
 
@@ -40,6 +41,7 @@ export default {
     if(url.pathname==='/d1-repair'||url.pathname==='/d1-repair.html')return Response.redirect(new URL('/ops?view=system',request.url).toString(),302);
     if(url.pathname==='/api/health')return new Response(JSON.stringify({ok:true,worker:'package-tracking',d1Bound:Boolean(env.TRACKING_DB),assetsBound:Boolean(env.ASSETS),ttgAuthBound:Boolean(env.TTG_AUTH),hunterConfigured:Boolean(env.HUNTER_API_URL),opsConsole:true}),{status:200,headers:JSON_HEADERS});
 
+    const reserve=await handleTransactionReserve(request,env);if(reserve)return reserve;
     const opsAuth=await handleOpsAuth(request,env);if(opsAuth)return opsAuth;
     const d1=await handleD1Bootstrap(request,env);if(d1)return d1;
     const opsApi=await handleOpsApi(request,env);if(opsApi)return opsApi;
