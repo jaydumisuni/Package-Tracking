@@ -91,3 +91,9 @@ CREATE TABLE IF NOT EXISTS client_job_links (
 
 CREATE INDEX IF NOT EXISTS idx_client_job_links_phone ON client_job_links(phone_normalized);
 CREATE INDEX IF NOT EXISTS idx_client_job_links_job ON client_job_links(job_id);
+
+CREATE TABLE IF NOT EXISTS tracking_sequences (
+  name TEXT PRIMARY KEY,
+  current_value INTEGER NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
