@@ -7,38 +7,61 @@
 <meta name="referrer" content="no-referrer">
 <title>TTG D1 Repair</title>
 <style>
-:root{color-scheme:dark;--bg:#050914;--panel:#0b1222;--line:#25314d;--text:#eef4ff;--muted:#9babc7;--blue:#4e8cff;--green:#26d07c;--red:#ff6577}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,#16234a 0,transparent 34%),var(--bg);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text);min-height:100vh;padding:24px}.wrap{width:min(760px,100%);margin:0 auto}.card{background:rgba(11,18,34,.96);border:1px solid var(--line);border-radius:24px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.35)}h1{margin:0 0 8px;font-size:28px}p{color:var(--muted);line-height:1.55}.warning{border:1px solid #604f24;background:#211c0d;border-radius:14px;padding:12px 14px;color:#f2d88a;font-size:13px}.field{display:grid;gap:7px;margin-top:16px}label{font-size:13px;font-weight:750}input,textarea{width:100%;border:1px solid var(--line);background:#07101f;color:#fff;border-radius:14px;padding:13px 14px;outline:none;font:inherit}input:focus,textarea:focus{border-color:var(--blue)}textarea{min-height:118px;resize:vertical}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}button{border:0;border-radius:14px;padding:12px 16px;font-weight:800;cursor:pointer}.primary{background:linear-gradient(135deg,#3478ff,#9358ff);color:#fff}.secondary{background:#131d31;color:#dce7ff;border:1px solid var(--line)}button:disabled{opacity:.55;cursor:not-allowed}.result{margin-top:18px;border-radius:16px;border:1px solid var(--line);background:#07101f;padding:14px;white-space:pre-wrap;word-break:break-word;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;display:none}.result.show{display:block}.ok{border-color:#216b49;color:#a7f3cf}.bad{border-color:#7b2a38;color:#ffb2bd}.meta{margin-top:14px;font-size:12px;color:var(--muted)}
+:root{color-scheme:dark;--bg:#050914;--panel:#0b1222;--line:#25314d;--text:#eef4ff;--muted:#9babc7;--blue:#4e8cff;--green:#26d07c;--red:#ff6577;--amber:#f2d88a}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,#16234a 0,transparent 34%),var(--bg);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text);min-height:100vh;padding:24px}.wrap{width:min(760px,100%);margin:0 auto}.card{background:rgba(11,18,34,.96);border:1px solid var(--line);border-radius:24px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.35)}h1{margin:0 0 8px;font-size:28px}h2{font-size:18px;margin:22px 0 8px}p{color:var(--muted);line-height:1.55}.status{border:1px solid var(--line);background:#07101f;border-radius:14px;padding:12px 14px;color:var(--muted);font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}.status.ok{border-color:#216b49;color:#a7f3cf}.status.warn{border-color:#604f24;color:var(--amber)}.warning{border:1px solid #604f24;background:#211c0d;border-radius:14px;padding:12px 14px;color:var(--amber);font-size:13px}.field{display:grid;gap:7px;margin-top:16px}label{font-size:13px;font-weight:750}input,textarea{width:100%;border:1px solid var(--line);background:#07101f;color:#fff;border-radius:14px;padding:13px 14px;outline:none;font:inherit}input:focus,textarea:focus{border-color:var(--blue)}textarea{min-height:118px;resize:vertical}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}button{border:0;border-radius:14px;padding:12px 16px;font-weight:800;cursor:pointer}.primary{background:linear-gradient(135deg,#3478ff,#9358ff);color:#fff}.secondary{background:#131d31;color:#dce7ff;border:1px solid var(--line)}button:disabled{opacity:.55;cursor:not-allowed}.result{margin-top:18px;border-radius:16px;border:1px solid var(--line);background:#07101f;padding:14px;white-space:pre-wrap;word-break:break-word;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;display:none}.result.show{display:block}.result.ok{border-color:#216b49;color:#a7f3cf}.result.bad{border-color:#7b2a38;color:#ffb2bd}.meta{margin-top:14px;font-size:12px;color:var(--muted)}hr{border:0;border-top:1px solid var(--line);margin:22px 0}
 </style>
 </head>
 <body>
-<main class="wrap">
-<section class="card">
-<h1>D1 phone-link repair</h1>
-<p>Temporary owner tool for correcting phone links on an existing TTG tracking transaction. Values entered here are sent directly to the Worker and are not stored by this page.</p>
-<div class="warning">Requires the Worker <b>ADMIN_TOKEN</b>. This page is intentionally not linked from the public tracking UI. Remove it after the historical repair is complete.</div>
+<main class="wrap"><section class="card">
+<h1>TTG tracking D1 setup & repair</h1>
+<p>Temporary owner-only tool. Client values entered here go directly to the Worker/D1 and are not stored by this page.</p>
+<div class="warning">Requires the Worker <b>ADMIN_TOKEN</b>. This page is intentionally unlinked from the public tracking UI and will be removed after historical setup is complete.</div>
+
+<h2>1. Database status</h2>
+<div id="d1Status" class="status">Checking TRACKING_DB…</div>
+<div class="field"><label for="token">Admin token</label><input id="token" type="password" autocomplete="new-password" spellcheck="false"></div>
+<div class="actions"><button class="primary" id="bootstrapBtn" type="button">Initialize / verify D1 schema</button><button class="secondary" id="refreshBtn" type="button">Refresh status</button></div>
+
+<hr>
+<h2>2. Historical phone-link repair</h2>
 <form id="repairForm" autocomplete="off">
-<div class="field"><label for="token">Admin token</label><input id="token" type="password" autocomplete="new-password" spellcheck="false" required></div>
 <div class="field"><label for="reference">Existing TTG reference</label><input id="reference" placeholder="Enter the actual TTG reference" autocomplete="off" autocapitalize="characters" spellcheck="false" required></div>
 <div class="field"><label for="phones">Phone numbers</label><textarea id="phones" placeholder="Enter one or more confirmed phone numbers, one per line" autocomplete="off" spellcheck="false" required></textarea></div>
 <div class="actions"><button class="primary" id="submitBtn" type="submit">Link in D1 & verify</button><button class="secondary" id="clearBtn" type="button">Clear</button></div>
 </form>
 <div id="result" class="result" aria-live="polite"></div>
-<div class="meta">Verification rule: every supplied phone must resolve through <code>/api/client-jobs</code> to the requested D1 transaction. No frontend alias counts as proof.</div>
-</section>
-</main>
+<div class="meta">Verification rule: every supplied phone must resolve through <code>/api/client-jobs</code> to the requested D1 transaction. No frontend alias or demo record counts as proof.</div>
+</section></main>
 <script>
 (()=>{
-const $=id=>document.getElementById(id),form=$('repairForm'),result=$('result'),btn=$('submitBtn');
+const $=id=>document.getElementById(id),form=$('repairForm'),result=$('result'),btn=$('submitBtn'),statusBox=$('d1Status'),bootstrapBtn=$('bootstrapBtn');
 const normalizePhone=value=>{let d=String(value||'').replace(/\D/g,'');if(d.startsWith('00'))d=d.slice(2);if(d.length===10&&d.startsWith('0'))d=`260${d.slice(1)}`;else if(d.length===9)d=`260${d}`;return d.length>=9&&d.length<=15?d:''};
 const mask=p=>p.startsWith('260')&&p.length>=12?`+260 ${p.slice(3,5)}***${p.slice(-4)}`:`***${p.slice(-4)}`;
 const show=(text,ok=false)=>{result.textContent=text;result.className=`result show ${ok?'ok':'bad'}`};
 const parsePhones=()=>[...new Set($('phones').value.split(/[\n,;]+/).map(v=>normalizePhone(v)).filter(Boolean))];
 async function readJson(res){const data=await res.json().catch(()=>({}));if(!res.ok){const e=new Error(data.error||`HTTP ${res.status}`);e.status=res.status;throw e}return data}
+async function refreshStatus(){
+ statusBox.className='status';statusBox.textContent='Checking TRACKING_DB…';
+ try{const d=await readJson(await fetch('/api/d1/status',{cache:'no-store'}));
+  if(!d.bound){statusBox.className='status warn';statusBox.textContent='TRACKING_DB: NOT BOUND';return d}
+  if(!d.ready){statusBox.className='status warn';statusBox.textContent=`TRACKING_DB: BOUND\nSchema: NOT READY\nMissing: ${(d.missing||[]).join(', ')||'unknown'}`;return d}
+  statusBox.className='status ok';statusBox.textContent='TRACKING_DB: BOUND\nSchema: READY\nAll required tracking tables verified.';return d
+ }catch(err){statusBox.className='status warn';statusBox.textContent=`Status check failed: ${err.message}`;return null}
+}
+bootstrapBtn.addEventListener('click',async()=>{
+ const token=$('token').value.trim();if(!token){show('Enter the ADMIN_TOKEN first.');return}
+ bootstrapBtn.disabled=true;bootstrapBtn.textContent='Initializing D1…';
+ try{const d=await readJson(await fetch('/api/admin/d1/bootstrap',{method:'POST',headers:{authorization:`Bearer ${token}`}}));
+  if(!d.ready)throw new Error(`schema still incomplete: ${(d.missing||[]).join(', ')}`);
+  show('PASS — TRACKING_DB is bound and all required D1 tables are ready.',true);await refreshStatus();
+ }catch(err){show(`FAILED — ${err.message}\nNo database readiness is claimed.`)}
+ finally{bootstrapBtn.disabled=false;bootstrapBtn.textContent='Initialize / verify D1 schema'}
+});
+$('refreshBtn').addEventListener('click',refreshStatus);
 form.addEventListener('submit',async e=>{
  e.preventDefault();result.className='result';result.textContent='';
  const token=$('token').value.trim(),reference=$('reference').value.trim().toUpperCase(),phones=parsePhones();
  if(!token||!reference||!phones.length){show('Missing admin token, TTG reference, or valid phone number.');return}
+ const d=await refreshStatus();if(!d?.ready){show('D1 schema is not ready. Run “Initialize / verify D1 schema” first.');return}
  btn.disabled=true;btn.textContent='Writing to D1…';
  try{
   const linked=await readJson(await fetch('/api/admin/client-phone/link',{method:'POST',headers:{'content-type':'application/json','authorization':`Bearer ${token}`},body:JSON.stringify({reference,clientPhones:phones})}));
@@ -51,13 +74,13 @@ form.addEventListener('submit',async e=>{
    if(tracked.found!==true||!tracked.masterId)throw new Error(`${mask(phone)} resolved to an incomplete tracking record`);
    checks.push(`${mask(phone)} → ${tracked.masterId} → ${tracked.reference} → ${tracked.stage}`);
   }
-  show(`PASS — D1 write and verification succeeded.\nLinked: ${linked.count||phones.length} phone(s)\n${checks.join('\n')}\n\nThe entered phone values have been cleared from this page.`,true);
-  $('phones').value='';$('token').value='';
- }catch(err){show(`FAILED — ${err.message}\n\nNo success is claimed. Check ADMIN_TOKEN, TRACKING_DB, the phone-index schema, and the existing TTG reference.`)}
+  show(`PASS — D1 write and verification succeeded.\nLinked: ${linked.count||phones.length} phone(s)\n${checks.join('\n')}\n\nPhone values cleared from this page.`,true);
+  $('phones').value='';
+ }catch(err){show(`FAILED — ${err.message}\n\nNo success is claimed. The referenced D1 tracking job must exist before phone links can be added.`)}
  finally{btn.disabled=false;btn.textContent='Link in D1 & verify'}
 });
-$('clearBtn').addEventListener('click',()=>{form.reset();result.className='result';result.textContent=''});
+$('clearBtn').addEventListener('click',()=>{$('reference').value='';$('phones').value='';result.className='result';result.textContent=''});
+refreshStatus();
 })();
 </script>
-</body>
-</html>
+</body></html>
