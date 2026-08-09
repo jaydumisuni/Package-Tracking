@@ -16,6 +16,7 @@ binding = "TTG_AUTH"
 service = "ttg-auth-api"
 
 [vars]
+GOOGLE_CLIENT_ID = "1070381167858-10im1vskjk3ppftpal9pq9j0bb6g5i44.apps.googleusercontent.com"
 HANDOVER_SHEET_ID = "1KD4lu32bMWNlyKWohbNDQPivDEvVN-7_VcWq0Lj1OO4"
 HANDOVER_SHEET_RANGE = "Handover Register!A:L"
 
