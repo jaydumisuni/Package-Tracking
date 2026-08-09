@@ -5,6 +5,8 @@ import {handleClientLookup} from "./client-lookup.js";
 import {handleShippingPolicy,normalizeShippingPolicy,wrapContext} from "./shipping-policy.js";
 import {handlePublicMaya} from "./maya-public.js";
 import {handleD1Bootstrap} from "./d1-bootstrap.js";
+import {handleAdminSession} from "./admin-auth.js";
+import {handleOwnerPhoneRepair} from "./admin-repair.js";
 
 const JSON_HEADERS={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
 
@@ -52,13 +54,19 @@ export default {
         worker:'package-tracking',
         d1Bound:Boolean(env.TRACKING_DB),
         assetsBound:Boolean(env.ASSETS),
-        adminTokenConfigured:Boolean(env.ADMIN_TOKEN),
+        ttgAuthBound:Boolean(env.TTG_AUTH),
         hunterConfigured:Boolean(env.HUNTER_API_URL)
       }),{status:200,headers:JSON_HEADERS});
     }
 
+    const adminSession=await handleAdminSession(request,env);
+    if(adminSession)return adminSession;
+
     const d1=await handleD1Bootstrap(request,env);
     if(d1)return d1;
+
+    const ownerRepair=await handleOwnerPhoneRepair(request,env);
+    if(ownerRepair)return ownerRepair;
 
     const maya=await handlePublicMaya(request,env);
     if(maya)return maya;
