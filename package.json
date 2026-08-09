@@ -4,9 +4,9 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "cf:bootstrap": "node scripts/cloudflare-bootstrap.mjs",
-    "cf:deploy": "wrangler deploy --config wrangler.generated.toml",
-    "cf:version": "wrangler versions upload --config wrangler.generated.toml"
+    "cf:bootstrap": "node --check src/router.js && node --check src/ops-auth.js && node --check src/ops-api.js && node --check src/d1-bootstrap.js",
+    "cf:deploy": "wrangler deploy",
+    "cf:version": "wrangler deploy"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"
