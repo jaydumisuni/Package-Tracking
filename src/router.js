@@ -4,6 +4,7 @@ import {handleHandoverRequest} from "./handover.js";
 import {handleClientLookup} from "./client-lookup.js";
 import {handleShippingPolicy,normalizeShippingPolicy,wrapContext} from "./shipping-policy.js";
 import {handlePublicMaya} from "./maya-public.js";
+import {handleD1Bootstrap} from "./d1-bootstrap.js";
 
 const JSON_HEADERS={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
 
@@ -55,6 +56,9 @@ export default {
         hunterConfigured:Boolean(env.HUNTER_API_URL)
       }),{status:200,headers:JSON_HEADERS});
     }
+
+    const d1=await handleD1Bootstrap(request,env);
+    if(d1)return d1;
 
     const maya=await handlePublicMaya(request,env);
     if(maya)return maya;
