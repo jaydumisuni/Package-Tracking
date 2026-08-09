@@ -8,6 +8,7 @@ The Worker serves both the static tracking UI and API routes.
 - `GET /api/track?id=TTG-...` -> public D1 tracking lookup
 - `GET /api/client-jobs?phone=...` -> D1 phone lookup for active jobs
 - `POST /api/maya` -> tracking-scoped Maya response
+- `POST /api/admin/transactions/reserve` -> atomically reserve the next D1-owned master `TTG-TXN-*` ID
 - `POST /api/admin/transactions/start` -> canonical transaction-start endpoint: create/update the D1 job, aliases and all supplied client/contact phone links
 - `POST /api/admin/jobs/upsert` -> lower-level tracking-job upsert; also links supplied phone fields
 - `POST /api/admin/jobs/update` -> append a TTG tracking note/stage
@@ -33,6 +34,31 @@ Generic alias forms:
 - `TTG-TXN-XXXXXX`
 
 All aliases for one transaction point to the same `tracking_jobs` row.
+
+## Master transaction reservation
+
+A new trackable workflow that does not already have a master transaction must call:
+
+`POST /api/admin/transactions/reserve`
+
+before assigning its public document aliases.
+
+The reservation is owned by D1. `tracking_sequences` keeps a monotonic transaction sequence and also catches up to any higher numeric `TTG-TXN-*` already present in `tracking_jobs`. A reservation is never manufactured in a browser, local document app, Hunter prompt, or Git repository.
+
+Synthetic response shape:
+
+```json
+{
+  "ok": true,
+  "reserved": true,
+  "sequence": 123,
+  "masterTransactionId": "TTG-TXN-000123"
+}
+```
+
+Reserved IDs are not recycled if a later document workflow is cancelled. Gaps are acceptable; duplicate transaction identity is not.
+
+An existing transaction must reuse its current master ID and must not reserve a second ID for another quote, invoice, receipt, disclaimer or later tracking stage.
 
 ## Transaction start — canonical creation flow
 
@@ -96,7 +122,7 @@ Admin write endpoints require Worker secret `ADMIN_TOKEN` and:
 
 `Authorization: Bearer <ADMIN_TOKEN>`
 
-This is the temporary owner/Hunter write boundary.
+This is the temporary owner/Hunter machine-to-machine write boundary. Browser staff sign-in uses the separate Tracking Operations/TTG Auth path; the admin token must not be typed into ordinary staff UI.
 
 ## Private carrier tracking
 
