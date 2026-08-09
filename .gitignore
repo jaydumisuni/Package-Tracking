@@ -1,0 +1,4 @@
+wrangler.generated.toml
+.dev.vars
+.env
+.env.*
