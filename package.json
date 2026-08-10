@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "cf:bootstrap": "node --check src/router.js && node --check src/ops-auth.js && node --check src/ops-api.js && node --check src/d1-bootstrap.js && node --check src/transaction-reserve.js && node --no-warnings scripts/check-transaction-reserve.mjs",
+    "cf:bootstrap": "node --check src/router.js && node --check src/ops-auth.js && node --check src/ops-api.js && node --check src/d1-bootstrap.js && node --check src/transaction-reserve.js && node --check src/docops-device.js && node --check src/docops-reserve.js && node --no-warnings scripts/check-transaction-reserve.mjs && node --no-warnings scripts/check-docops-device.mjs",
     "cf:deploy": "wrangler deploy",
     "cf:version": "wrangler deploy"
   },
