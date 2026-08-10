@@ -1,3 +1,5 @@
+import {deviceIdentity,issueDeviceSession,revokeDeviceSession} from './docops-device.js';
+
 const H={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
 const J=(data,status=200,headers={})=>new Response(JSON.stringify(data),{status,headers:{...H,...headers}});
 const COOKIE='ttg_tracking_session';
@@ -46,7 +48,12 @@ async function validateToken(env,token){
     return {ok:true,status:200,user,token};
   }catch(error){console.error('tracking auth validation failed',String(error));return {ok:false,status:503,error:'TTG_AUTH_UNAVAILABLE'};}
 }
-export async function opsIdentity(request,env){return validateToken(env,authToken(request))}
+export async function opsIdentity(request,env){
+  const cookie=authToken(request);
+  if(cookie)return validateToken(env,cookie);
+  const device=await deviceIdentity(request,env);
+  return device||{ok:false,status:401,error:'SIGN_IN_REQUIRED'};
+}
 export async function requireOpsAccess(request,env,{ownerOnly=false}={}){
   const auth=await opsIdentity(request,env);
   if(!auth.ok)return auth;
@@ -73,7 +80,7 @@ export async function handleOpsAuth(request,env){
   if(path==='/api/ops/auth/session'&&request.method==='GET'){
     const auth=await opsIdentity(request,env);
     if(!auth.ok)return J({ok:false,authenticated:false,error:auth.error},auth.status);
-    return J({ok:true,authenticated:true,user:auth.user});
+    return J({ok:true,authenticated:true,user:auth.user,device:Boolean(auth.device),expiresAt:auth.expiresAt||''});
   }
   if(path==='/api/ops/auth/login'&&request.method==='POST'){
     const body=await request.json().catch(()=>({}));
@@ -106,6 +113,14 @@ export async function handleOpsAuth(request,env){
       return J({ok:false,error:'This TTG account is approved but does not have Tracking Operations access.'},403);
     }
     return J({ok:true,user},200,{'set-cookie':sessionCookie(d.token)});
+  }
+  if(path==='/api/ops/auth/device/issue'&&request.method==='POST'){
+    const auth=await validateToken(env,authToken(request));
+    if(!auth.ok)return J({ok:false,error:auth.error},auth.status);
+    try{return J(await issueDeviceSession(env,auth.user))}catch(error){return J({ok:false,error:String(error.message||error)},503)}
+  }
+  if(path==='/api/ops/auth/device/revoke'&&request.method==='POST'){
+    try{const result=await revokeDeviceSession(request,env);return J({ok:result.ok,error:result.error||undefined},result.status||200)}catch(error){return J({ok:false,error:String(error.message||error)},503)}
   }
   if(path==='/api/ops/auth/logout'&&request.method==='POST'){
     const token=authToken(request);
