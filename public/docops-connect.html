@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="theme-color" content="#07101f">
+<link rel="icon" href="/ttg-ghost-main.svg" type="image/svg+xml">
+<title>Connect Document Operations</title>
+<style>
+:root{color-scheme:dark;--bg:#040814;--panel:#09152a;--line:#243a5e;--text:#f4f7ff;--muted:#9daccc;--green:#46e2a0;--red:#ff7185}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}body{min-height:100dvh;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 15% 0,rgba(39,103,255,.18),transparent 34%),radial-gradient(circle at 92% 12%,rgba(153,51,255,.16),transparent 32%),#040814}.card{width:min(470px,100%);border:1px solid rgba(120,86,255,.38);border-radius:26px;padding:clamp(20px,5vw,32px);background:linear-gradient(145deg,rgba(13,24,46,.98),rgba(6,11,24,.98));box-shadow:0 28px 90px rgba(0,0,0,.5)}.brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}.brand img{width:58px;height:58px;object-fit:contain}.brand strong{display:block;font-size:21px}.brand span{display:block;color:#8ab5e7;font-size:12px;margin-top:5px;letter-spacing:.08em}h1{font-size:clamp(31px,8vw,44px);line-height:1.02;margin:0;letter-spacing:-.04em}p{color:var(--muted);line-height:1.55}.googlehost{min-height:46px;display:grid;place-items:center;margin-top:18px}.sep{display:flex;align-items:center;gap:10px;color:#75839d;font-size:12px;font-weight:800;margin:16px 0}.sep:before,.sep:after{content:"";height:1px;flex:1;background:rgba(255,255,255,.1)}form{display:grid;gap:12px}.field{display:grid;gap:7px}.field label{font-size:12px;color:#b9c8e4;font-weight:850}.field input{width:100%;border:1px solid var(--line);background:#061122;color:#fff;border-radius:13px;padding:12px 13px;outline:none}.btn{border:1px solid var(--line);background:#0c1730;color:#fff;border-radius:13px;padding:11px 14px;font-weight:850;cursor:pointer}.btn.primary{border:0;background:linear-gradient(135deg,#3a83ff,#9d48ff)}.status{min-height:24px;margin-top:12px;font-size:13px;text-align:center;color:var(--muted)}.status.bad{color:var(--red)}.status.good{color:var(--green)}.hidden{display:none!important}
+</style>
+</head>
+<body>
+<section class="card">
+  <div class="brand"><img src="/ttg-ghost-main.svg" alt="THETECHGUY"><div><strong>Document Operations</strong><span>TTG ACCOUNT CONNECTION</span></div></div>
+  <div id="loginBlock">
+    <h1>Staff sign in</h1>
+    <p>Connect an approved THETECHGUY owner/admin or staff account. Document Operations receives a short-lived scoped session; your main Tracking/TTG session stays in this browser.</p>
+    <div id="googleHost" class="googlehost"></div>
+    <div class="sep">or use your TTG account</div>
+    <form id="loginForm">
+      <div class="field"><label>Email</label><input id="email" type="email" autocomplete="username" required></div>
+      <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+      <button class="btn primary" type="submit">Sign in & connect</button>
+    </form>
+  </div>
+  <div id="doneBlock" class="hidden"><h1>Connected</h1><p id="doneText">Document Operations is connected. You can return to the local window.</p></div>
+  <div id="status" class="status">Checking your TTG session…</div>
+</section>
+<script>
+const $=id=>document.getElementById(id);
+const params=new URLSearchParams(location.search);
+function targetOrigin(){
+  const fallback='http://127.0.0.1:8789';
+  const raw=params.get('origin')||fallback;
+  try{const u=new URL(raw);if(u.protocol==='http:'&&(u.hostname==='127.0.0.1'||u.hostname==='localhost'))return u.origin}catch{}
+  return fallback;
+}
+async function api(path,init={}){const r=await fetch(path,{credentials:'include',cache:'no-store',...init});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||d.message||`HTTP ${r.status}`);return d}
+function setStatus(text,kind=''){const el=$('status');el.textContent=text;el.className='status '+kind}
+async function finish(user){
+  setStatus('Authorising this Document Operations session…');
+  const d=await api('/api/ops/auth/device/issue',{method:'POST'});
+  if(!window.opener){setStatus('Connection window was not opened by Document Operations. Close this tab and use Connect TTG Account from the local app.','bad');return}
+  window.opener.postMessage({type:'ttg-docops-auth',token:d.token,expiresAt:d.expiresAt,user:d.user||user},targetOrigin());
+  $('loginBlock').classList.add('hidden');$('doneBlock').classList.remove('hidden');$('doneText').textContent=`Connected as ${(d.user||user).displayName||(d.user||user).email}. Return to Document Operations.`;setStatus('Connected successfully.','good');
+  setTimeout(()=>window.close(),1200);
+}
+async function session(){try{const d=await api('/api/ops/auth/session');await finish(d.user)}catch{setStatus('Approved owner/admin and staff accounts only.');renderGoogle()}}
+async function loadGoogle(){return new Promise((resolve,reject)=>{if(window.google?.accounts?.id)return resolve();const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=true;s.defer=true;s.onload=resolve;s.onerror=reject;document.head.appendChild(s)})}
+async function renderGoogle(){const host=$('googleHost');host.innerHTML='';try{const d=await api('/api/ops/auth/google/status');await loadGoogle();google.accounts.id.initialize({client_id:d.clientId,callback:async x=>{try{setStatus('Checking Google sign in…');const a=await api('/api/ops/auth/google/exchange',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({credential:x.credential})});await finish(a.user)}catch(e){setStatus(e.message,'bad')}}});google.accounts.id.renderButton(host,{theme:'outline',size:'large',shape:'pill',text:'signin_with',width:Math.min(400,Math.max(260,host.clientWidth||320))})}catch(e){host.innerHTML='<button class="btn" disabled>Google sign-in unavailable</button>';setStatus(e.message,'bad')}}
+$('loginForm').onsubmit=async e=>{e.preventDefault();try{setStatus('Signing in…');const d=await api('/api/ops/auth/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:$('email').value.trim(),password:$('password').value})});await finish(d.user)}catch(err){setStatus(err.message,'bad')}};
+session();
+</script>
+</body>
+</html>
