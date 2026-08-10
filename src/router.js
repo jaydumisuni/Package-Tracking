@@ -8,6 +8,7 @@ import {handleD1Bootstrap} from "./d1-bootstrap.js";
 import {handleOpsAuth} from "./ops-auth.js";
 import {handleOpsApi} from "./ops-api.js";
 import {handleTransactionReserve} from "./transaction-reserve.js";
+import {handleDocOpsReserve} from "./docops-reserve.js";
 
 const JSON_HEADERS={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
 
@@ -23,6 +24,7 @@ async function serveAsset(request,env,path,contentType){
 }
 async function serveExactBrandIcon(request,env){return serveAsset(request,env,'/ttg-ghost-main.svg','image/svg+xml')}
 async function serveOps(request,env){return serveAsset(request,env,'/ops.html','text/html; charset=utf-8')}
+async function serveDocOpsConnect(request,env){return serveAsset(request,env,'/docops-connect.html','text/html; charset=utf-8')}
 async function serveAppWithMayaOverride(request,env){
   if(!env.ASSETS)return null;
   const baseUrl=new URL('/app.js',request.url),overrideUrl=new URL('/maya-override.js',request.url);
@@ -38,11 +40,13 @@ export default {
     if(url.pathname==='/site-icon.svg'){const icon=await serveExactBrandIcon(request,env);if(icon)return icon}
     if(url.pathname==='/app.js'){const app=await serveAppWithMayaOverride(request,env);if(app)return app}
     if((url.pathname==='/ops'||url.pathname==='/ops/')&&request.method==='GET'){const page=await serveOps(request,env);if(page)return page}
+    if((url.pathname==='/ops/connect'||url.pathname==='/ops/connect/')&&request.method==='GET'){const page=await serveDocOpsConnect(request,env);if(page)return page}
     if(url.pathname==='/d1-repair'||url.pathname==='/d1-repair.html')return Response.redirect(new URL('/ops?view=system',request.url).toString(),302);
-    if(url.pathname==='/api/health')return new Response(JSON.stringify({ok:true,worker:'package-tracking',d1Bound:Boolean(env.TRACKING_DB),assetsBound:Boolean(env.ASSETS),ttgAuthBound:Boolean(env.TTG_AUTH),hunterConfigured:Boolean(env.HUNTER_API_URL),opsConsole:true}),{status:200,headers:JSON_HEADERS});
+    if(url.pathname==='/api/health')return new Response(JSON.stringify({ok:true,worker:'package-tracking',d1Bound:Boolean(env.TRACKING_DB),assetsBound:Boolean(env.ASSETS),ttgAuthBound:Boolean(env.TTG_AUTH),hunterConfigured:Boolean(env.HUNTER_API_URL),opsConsole:true,docOpsConnect:true}),{status:200,headers:JSON_HEADERS});
 
     const reserve=await handleTransactionReserve(request,env);if(reserve)return reserve;
     const opsAuth=await handleOpsAuth(request,env);if(opsAuth)return opsAuth;
+    const docOpsReserve=await handleDocOpsReserve(request,env);if(docOpsReserve)return docOpsReserve;
     const d1=await handleD1Bootstrap(request,env);if(d1)return d1;
     const opsApi=await handleOpsApi(request,env);if(opsApi)return opsApi;
     const maya=await handlePublicMaya(request,env);if(maya)return maya;
