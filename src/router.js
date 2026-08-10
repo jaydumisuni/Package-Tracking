@@ -22,9 +22,17 @@ async function serveAsset(request,env,path,contentType){
   if(contentType)headers.set('content-type',contentType);
   return new Response(response.body,{status:response.status,headers});
 }
+async function serveAuthHtml(request,env,path){
+  const response=await serveAsset(request,env,path,'text/html; charset=utf-8');
+  if(!response)return null;
+  const headers=new Headers(response.headers);
+  headers.set('referrer-policy','strict-origin-when-cross-origin');
+  headers.set('cross-origin-opener-policy','same-origin-allow-popups');
+  return new Response(response.body,{status:response.status,headers});
+}
 async function serveExactBrandIcon(request,env){return serveAsset(request,env,'/ttg-ghost-main.svg','image/svg+xml')}
-async function serveOps(request,env){return serveAsset(request,env,'/ops.html','text/html; charset=utf-8')}
-async function serveDocOpsConnect(request,env){return serveAsset(request,env,'/docops-connect.html','text/html; charset=utf-8')}
+async function serveOps(request,env){return serveAuthHtml(request,env,'/ops.html')}
+async function serveDocOpsConnect(request,env){return serveAuthHtml(request,env,'/docops-connect.html')}
 async function serveAppWithMayaOverride(request,env){
   if(!env.ASSETS)return null;
   const baseUrl=new URL('/app.js',request.url),overrideUrl=new URL('/maya-override.js',request.url);
