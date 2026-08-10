@@ -15,6 +15,10 @@ function parseCookie(request,name){
   return '';
 }
 function authToken(request){return parseCookie(request,COOKIE)}
+function bearerToken(request){
+  const header=String(request.headers.get('authorization')||'');
+  return header.toLowerCase().startsWith('bearer ')?header.slice(7).trim():'';
+}
 function googleClientId(env){return String(env.GOOGLE_CLIENT_ID||DEFAULT_GOOGLE_CLIENT_ID).trim()}
 function safeUser(user={}){
   return {
@@ -113,6 +117,11 @@ export async function handleOpsAuth(request,env){
       return J({ok:false,error:'This TTG account is approved but does not have Tracking Operations access.'},403);
     }
     return J({ok:true,user},200,{'set-cookie':sessionCookie(d.token)});
+  }
+  if(path==='/api/ops/auth/device/from-session'&&request.method==='POST'){
+    const auth=await validateToken(env,bearerToken(request));
+    if(!auth.ok)return J({ok:false,error:auth.error},auth.status);
+    try{return J(await issueDeviceSession(env,auth.user))}catch(error){return J({ok:false,error:String(error.message||error)},503)}
   }
   if(path==='/api/ops/auth/device/issue'&&request.method==='POST'){
     const auth=await validateToken(env,authToken(request));
