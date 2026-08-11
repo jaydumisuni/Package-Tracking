@@ -34,27 +34,14 @@ async function serveAuthHtml(request,env,path){
 }
 async function serveExactBrandIcon(request,env){return serveAsset(request,env,'/ttg-ghost-main.svg','image/svg+xml')}
 async function serveDocOpsConnect(request,env){return serveAuthHtml(request,env,'/docops-connect.html')}
-async function serveAppWithMayaOverride(request,env){
-  if(!env.ASSETS)return null;
-  const baseUrl=new URL('/app.js',request.url),overrideUrl=new URL('/maya-override.js',request.url);
-  const [base,override]=await Promise.all([env.ASSETS.fetch(new Request(baseUrl,{method:'GET',headers:request.headers})),env.ASSETS.fetch(new Request(overrideUrl,{method:'GET',headers:request.headers}))]);
-  if(!base.ok)return base;if(!override.ok)return base;
-  const body=`${await base.text()}\n;${await override.text()}`;
-  return new Response(body,{status:200,headers:{'content-type':'application/javascript; charset=utf-8','cache-control':'no-store, max-age=0, must-revalidate'}});
-}
 
 export default {
   async fetch(request,env,ctx){
     const url=new URL(request.url);
     if(url.pathname==='/site-icon.svg'){const icon=await serveExactBrandIcon(request,env);if(icon)return icon}
-    if(url.pathname==='/app.js'){const app=await serveAppWithMayaOverride(request,env);if(app)return app}
+    if(url.pathname==='/app.js'){const app=await serveAsset(request,env,'/app.js','application/javascript; charset=utf-8');if(app)return app}
 
-    // Admin is the only operator UI. Package Tracking remains the D1/API
-    // authority; old operator bookmarks always land in Admin Tracking.
     if((url.pathname==='/ops'||url.pathname==='/ops/')&&['GET','HEAD'].includes(request.method))return Response.redirect(`${ADMIN_ORIGIN}/#tracking`,302);
-
-    // Scoped auth handoff only for the deterministic local Document Operations
-    // fallback. This is not an operator UI.
     if((url.pathname==='/ops/connect'||url.pathname==='/ops/connect/')&&request.method==='GET'){const page=await serveDocOpsConnect(request,env);if(page)return page}
     if(url.pathname==='/d1-repair'||url.pathname==='/d1-repair.html')return Response.redirect(`${ADMIN_ORIGIN}/#tracking`,302);
 
