@@ -6,11 +6,12 @@
 <meta name="theme-color" content="#050914">
 <meta name="apple-mobile-web-app-title" content="TTG Tracking">
 <title>THETECHGUY Tracking</title>
-<link rel="icon" type="image/svg+xml" href="/site-icon.svg?v=20260811b">
-<link rel="apple-touch-icon" href="/site-icon.svg?v=20260811b">
-<link rel="mask-icon" href="/site-icon.svg?v=20260811b" color="#7c3aed">
-<link rel="stylesheet" href="/styles.css?v=20260809a">
-<link rel="stylesheet" href="/patch.css?v=20260809a">
+<link rel="icon" href="https://thetechguyds.com/favicon.ico?v=20260812a" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="https://thetechguyds.com/favicon-32x32.png?v=20260812a">
+<link rel="icon" type="image/png" sizes="16x16" href="https://thetechguyds.com/favicon-16x16.png?v=20260812a">
+<link rel="apple-touch-icon" href="https://thetechguyds.com/apple-touch-icon.png?v=20260812a">
+<link rel="stylesheet" href="/styles.css?v=20260812a">
+<link rel="stylesheet" href="/patch.css?v=20260812a">
 </head>
 <body>
 <header class="topbar">
@@ -26,6 +27,7 @@
       <p>Enter a TTG receipt, invoice, disclaimer, quote, master tracking ID, or the phone number linked to your TTG records.</p>
       <form class="search" id="searchForm"><label class="search-input">⌕ <input id="trackingInput" placeholder="TTG ID or phone number" aria-label="TTG tracking ID or client phone number" autocomplete="off" autocapitalize="characters" inputmode="text"></label><button class="track-btn" type="submit">Track <span>→</span></button></form>
       <div class="search-note"><strong>Forgot your TTG ID?</strong> Use the phone number linked to your TTG documents to view all active jobs.</div>
+      <div id="lookupNotice" class="lookup-notice" role="status" aria-live="polite" hidden></div>
       <div class="chips" aria-label="Accepted tracking formats"><b>Accepted formats:</b><span>TTG-RCP-XXXXXX</span><span>09XX XXX XXX</span><span>+260 9XX XXX XXX</span></div>
     </div>
   </section>
@@ -54,19 +56,19 @@
         <div class="status"><div class="status-icon">i</div><div><b>Current status: <strong id="currentStatus">—</strong></b><p id="statusNote">—</p></div></div>
       </section>
 
-      <section class="lower-grid"><div class="card update-card"><div class="update-title">🔊 Latest Update <span id="updateBadge">Tracking</span></div><p id="latestUpdate">—</p><strong class="source">Tracking Source: TTG / internal carrier monitoring</strong></div></section>
+      <section class="lower-grid"><div class="card update-card"><div class="update-title">🔊 Latest Update <span id="updateBadge">Tracking</span></div><p id="latestUpdate">—</p><strong class="source">Tracking Source: THETECHGUY / carrier updates</strong></div></section>
     </div>
 
-    <aside class="sidebar"><section class="card summary-card"><h2>▤ Tracking Summary</h2><div class="summary"><span>Reference</span><b id="summaryReference">—</b><span>Master ID</span><b id="summaryMaster">—</b><span>Route</span><b class="blue" id="summaryRoute">—</b><span>Status</span><b class="blue" id="summaryStatus">—</b><span>Last Update</span><b id="summaryUpdated">—</b><span>Location</span><b id="summaryLocation">—</b><span>Order Payment</span><b class="green" id="summaryPayment">—</b><span>Shipping Cost</span><b id="summaryShippingCost">—</b><span>Next Update</span><b>Next saved event / handoff</b></div></section><section class="card maya-card"><div><h2>❔ Need help?</h2><p>Maya can explain this parcel status, what happens next, shipping stages, customs and delivery guidance.</p><button class="maya-open" id="mayaCardOpen" type="button">Open Maya 💬</button></div><div class="maya-side"><img src="https://thetechguyds.com/assets/chat/maya-avatar.webp" alt="Maya"><b>Maya</b></div></section></aside>
+    <aside class="sidebar"><section class="card summary-card"><h2>▤ Tracking Summary</h2><div class="summary"><span>Reference</span><b id="summaryReference">—</b><span>Master ID</span><b id="summaryMaster">—</b><span>Route</span><b class="blue" id="summaryRoute">—</b><span>Status</span><b class="blue" id="summaryStatus">—</b><span>Last Update</span><b id="summaryUpdated">—</b><span>Location</span><b id="summaryLocation">—</b><span>Order Payment</span><b class="green" id="summaryPayment">—</b><span>Shipping Cost</span><b id="summaryShippingCost">—</b><span>Next Update</span><b>Next saved event / handoff</b></div></section><section class="card maya-card"><div><h2>❔ Need help?</h2><p>Maya is the same THETECHGUY front desk assistant from our main site. Ask naturally about this tracking job or anything you need help with.</p><button class="maya-open" id="mayaCardOpen" type="button">Open Maya 💬</button></div><div class="maya-side"><img src="https://thetechguyds.com/assets/chat/maya-avatar.webp" alt="Maya"><b>Maya</b></div></section></aside>
   </section>
 </main>
 
-<footer class="footer"><div>◈ <b>Secure. Private. Trusted.</b><small>Your public tracking view does not expose internal supplier/carrier references.</small></div><div>✓ <b>Progress updates</b><small>Follow each TTG stage from order to completion.</small></div><div>◉ <b>Transparent & Reliable</b><small>Clear status, handoffs and customer-facing notes.</small></div><div>◎ <b>Powered by THETECHGUY DIGITAL SOLUTIONS</b><small>Fairytale Business — Make a wish, we sort it.</small></div><strong>tracking.thetechguyds.com</strong></footer>
+<footer class="footer"><div>◈ <b>Secure. Private. Trusted.</b><small>Your public tracking view does not expose private supplier/carrier references.</small></div><div>✓ <b>Progress updates</b><small>Follow each TTG stage from order to completion.</small></div><div>◉ <b>Transparent & Reliable</b><small>Clear status, handoffs and customer-facing notes.</small></div><div>◎ <b>Powered by THETECHGUY DIGITAL SOLUTIONS</b><small>Fairytale Business — Make a wish, we sort it.</small></div><strong>tracking.thetechguyds.com</strong></footer>
 
-<div class="tracking-overlay" id="trackingOverlay" aria-hidden="true"><div class="tracking-loader"><img src="/parcel-box-clear.svg?v=20260811b" alt=""><div class="scan-line"></div><h2>Tracking your TTG job…</h2><p>Checking the latest saved D1 tracking record.</p></div></div>
+<div class="tracking-overlay" id="trackingOverlay" aria-hidden="true"><div class="tracking-loader"><img src="/parcel-box-clear.svg?v=20260811b" alt=""><div class="scan-line"></div><h2>Tracking your TTG job…</h2><p>Checking the latest saved tracking record.</p></div></div>
 
 <div id="tgai-root"><button id="tgai-fab" type="button" aria-label="Open Maya"><img src="https://thetechguyds.com/assets/ttg-asset-045-1f0dbae6eeb1.webp" alt="Maya help desk"></button><section id="tgai-panel" aria-label="Maya assistant" aria-hidden="true"><div class="tgai-head"><div class="tgai-head-brand"><img src="https://thetechguyds.com/assets/chat/maya-avatar.webp" alt="Maya"><div><strong>Maya</strong><small><i></i>Live · THETECHGUY front desk</small></div></div><button id="tgai-close" type="button">Close</button></div><div class="tgai-body" id="tgaiMessages"><div class="tgai-msg">Hey, how can I help today?</div></div><form class="tgai-input" id="tgaiForm"><input id="tgaiInput" autocomplete="off" placeholder="Type what you need..." aria-label="Message Maya"><button type="submit">Send</button></form></section></div>
-<script src="/app.js?v=20260809a"></script>
-<script src="/maya-override.js?v=20260811b"></script>
+<script src="/app.js?v=20260812a"></script>
+<script src="/maya-override.js?v=20260812a"></script>
 </body>
 </html>
