@@ -1,103 +1,143 @@
-const JSON_HEADERS = {
-  'content-type': 'application/json; charset=utf-8',
-  'cache-control': 'no-store'
+const JSON_HEADERS={
+  'content-type':'application/json; charset=utf-8',
+  'cache-control':'no-store'
 };
 
-const json = (data, status = 200) => new Response(JSON.stringify(data), {
-  status,
-  headers: JSON_HEADERS
-});
+const MAIN_MAYA_URL='https://thetechguyds.com/api/maya/chat';
+const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:JSON_HEADERS});
+const normalizeRef=value=>String(value||'').trim().toUpperCase();
 
-async function callHunter(env, message) {
-  if (!env.HUNTER_API_URL || String(env.HUNTER_ENABLED || 'true').toLowerCase() === 'false') return null;
+async function trackingContext(env,reference){
+  const ref=normalizeRef(reference);
+  if(!ref||!env.TRACKING_DB)return null;
 
-  const headers = { 'content-type': 'application/json' };
-  if (env.HUNTER_API_KEY) headers.authorization = `Bearer ${env.HUNTER_API_KEY}`;
+  const row=await env.TRACKING_DB.prepare(`
+    SELECT DISTINCT
+      j.id,j.master_transaction_id,j.public_reference,j.client_name,j.item_name,j.item_condition,
+      j.service_type,j.route,j.origin_country,j.destination_country,j.amount_received,j.currency,
+      j.payment_method,j.order_payment_status,j.shipping_cost_status,j.shipping_cost_amount,
+      j.shipping_cost_currency,j.current_stage,j.status_note,j.current_location,j.updated_at
+    FROM tracking_jobs j
+    LEFT JOIN tracking_aliases a ON a.job_id=j.id
+    WHERE a.alias=?1 OR j.master_transaction_id=?1 OR j.public_reference=?1
+    LIMIT 1
+  `).bind(ref).first();
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 3000);
-  const system = `You are Maya, THETECHGUY's tracking and shipping assistant. Be warm, natural and concise. The user may chat with you normally without selecting a tracking job. Only require a D1 tracking record when they ask for facts about a specific client's parcel, order, device or transaction. Never invent job-specific facts. You can explain TTG tracking IDs, phone-number tracking, shipping stages, seller/carrier handoffs, customs and delivery guidance. Shipping cost is normally confirmed at the Zambia local pickup center, after arrival in Zambia. Route guides: USA about 21 working days after international handoff; UK about 14 working days or less; Japan genuine parts about 14 working days; China small parcels about 7-14 working days; China large/heavy items about 60-70 days.`;
+  if(!row)return null;
+  const updates=await env.TRACKING_DB.prepare(`
+    SELECT stage,note,location,created_at
+    FROM tracking_updates
+    WHERE job_id=?1
+    ORDER BY created_at ASC,id ASC
+    LIMIT 50
+  `).bind(row.id).all();
 
-  try {
-    const response = await fetch(env.HUNTER_API_URL, {
-      method: 'POST',
-      headers,
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: env.HUNTER_MODEL || 'hunter-cloudflare',
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: String(message || '') }
-        ],
-        temperature: 0.45
-      })
+  return {
+    reference:ref,
+    masterId:row.master_transaction_id||'',
+    clientName:row.client_name||'',
+    item:row.item_name||'',
+    condition:row.item_condition||'',
+    serviceType:row.service_type||'',
+    route:row.route||'',
+    origin:row.origin_country||'',
+    destination:row.destination_country||'Zambia',
+    amountReceived:row.amount_received?`${row.currency||'ZMW'} ${Number(row.amount_received).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`:'',
+    paymentMethod:row.payment_method||'',
+    orderPaymentStatus:row.order_payment_status||'',
+    shippingCostStatus:row.shipping_cost_status||'',
+    shippingCostAmount:row.shipping_cost_amount==null?'':`${row.shipping_cost_currency||row.currency||'ZMW'} ${Number(row.shipping_cost_amount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`,
+    currentStage:row.current_stage||'',
+    statusNote:row.status_note||'',
+    location:row.current_location||row.origin_country||'',
+    updatedAt:row.updated_at||'',
+    events:(updates.results||[]).map(event=>({
+      stage:event.stage||'',
+      note:event.note||'',
+      location:event.location||'',
+      createdAt:event.created_at||''
+    }))
+  };
+}
+
+function fallback(payload){
+  const text=String(payload?.message||'').trim();
+  const greeting=/^(hi|hey|hello|yo|hiya)\b/i.test(text);
+  return {
+    ok:true,
+    reply:greeting
+      ? 'Hi, you’re through to THETECHGUY. What can we sort out for you?'
+      : 'I’m having trouble reaching the help desk right now. You can still use the tracking box above, or try me again in a moment.',
+    conversation_id:payload?.conversation_id||`maya-tracking-${Date.now()}`,
+    case_id:payload?.case_id||null,
+    status:'maya_temporarily_unavailable',
+    actions:[],
+    ui:{show_typing_ms:900}
+  };
+}
+
+async function callMainMaya(env,payload,request){
+  const endpoint=String(env.MAYA_MAIN_URL||MAIN_MAYA_URL).trim();
+  const headers={
+    'content-type':'application/json',
+    'x-ttg-source':'thetechguyds-tracking',
+    'x-ttg-personality':'maya',
+    'x-ttg-public-chat':'true'
+  };
+  const session=payload.conversation_id||request.headers.get('x-hunter-session')||'';
+  if(session)headers['x-hunter-session']=session;
+
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),9000);
+  try{
+    const response=await fetch(endpoint,{
+      method:'POST',headers,signal:controller.signal,body:JSON.stringify(payload)
     });
-    if (!response.ok) return null;
-    const data = await response.json();
-    return data?.choices?.[0]?.message?.content?.trim() || data?.reply?.trim() || null;
-  } catch {
-    return null;
-  } finally {
+    const text=await response.text();
+    let data={};
+    try{data=text?JSON.parse(text):{}}catch{data={}}
+    if(!response.ok||!String(data.reply||'').trim())throw new Error(`Maya ${response.status}`);
+    return data;
+  }finally{
     clearTimeout(timeout);
   }
 }
 
-function fallback(message) {
-  const q = String(message || '').trim().toLowerCase();
+export async function handlePublicMaya(request,env){
+  const url=new URL(request.url);
+  if(url.pathname!=='/api/maya'||request.method!=='POST')return null;
 
-  if (!q) return 'Ask me anything about TTG tracking or shipping.';
+  const body=await request.clone().json().catch(()=>({}));
+  const message=String(body.message||'').trim();
+  const record=body.trackingId?await trackingContext(env,body.trackingId):null;
+  const payload={
+    message,
+    conversation_id:body.conversation_id||null,
+    case_id:body.case_id||null,
+    source:{
+      channel:'website',
+      site:'thetechguyds-tracking',
+      personality:'maya',
+      widget:'tracking-site-frontdesk'
+    },
+    client_hint:{
+      tracking_reference:record?.reference||normalizeRef(body.trackingId)||''
+    },
+    page_context:{
+      page:'tracking',
+      selected_tracking:record||null,
+      instruction:record
+        ? 'A customer-facing tracking record is open. Use these facts when relevant, never invent missing details, and never expose implementation or storage terminology.'
+        : 'No tracking record is currently selected. Chat normally as the THETECHGUY front desk; ask the customer to track a TTG ID or linked phone only when job-specific facts are needed.'
+    },
+    attachments:Array.isArray(body.attachments)?body.attachments:[]
+  };
 
-  if (/^(hi|hey|hello|yo|hiya)\b/.test(q)) {
-    return 'Hey 👋🏽 I’m Maya. I handle tracking and shipping here. You can ask me normally about TTG IDs, phone-number tracking, delivery timing, shipping stages, customs or what happens next. For details about one specific job, track it first and I’ll read that D1 record.';
+  if(!message)return json(fallback(payload));
+  try{
+    const data=await callMainMaya(env,payload,request);
+    return json({...data,ok:true});
+  }catch{
+    return json(fallback(payload));
   }
-
-  if (/what('?s| is) that|what do you mean|mm+\s*what/.test(q)) {
-    return 'I mean you can talk to me normally here 🙂. I only need a selected D1 job when you want facts about a specific parcel or transaction, because I won’t guess client tracking details.';
-  }
-
-  if (/phone|number/.test(q) && /track|tracking|lookup|find/.test(q)) {
-    return 'You can track with either a TTG ID or the phone number linked to the transaction. If that phone has several active jobs, the site shows them separately so you can choose the one you want without mixing their records.';
-  }
-
-  if (/shipping cost|shipping payment|pay shipping|delivery charge/.test(q)) {
-    return 'For this tracking flow, the international shipping charge is normally confirmed after the parcel reaches the Zambia local pickup center. That is when the shipping-cost stage becomes due.';
-  }
-
-  if (/usa|america/.test(q) && /long|days|eta|delivery|arrive|time/.test(q)) {
-    return 'USA shipments are normally guided at about 21 working days after the international shipping handoff.';
-  }
-
-  if (/\buk\b|britain|england/.test(q)) {
-    return 'UK shipments are normally about 14 working days or less after the shipping handoff.';
-  }
-
-  if (/japan/.test(q)) {
-    return 'For genuine parts from Japan, the normal guide is about 14 working days after the shipping handoff.';
-  }
-
-  if (/china/.test(q)) {
-    if (/large|heavy|big|bulky|freight/.test(q)) return 'Large or heavy items from China are normally about 60–70 days.';
-    return 'Small China parcels are normally about 7–14 working days. Large or heavy items are normally about 60–70 days.';
-  }
-
-  if (/custom|clearance|duty/.test(q)) {
-    return 'Customs or local clearance can add time after the international leg. When a specific D1 job is open, I can explain its saved handoff and location updates without exposing private carrier references.';
-  }
-
-  return 'Sure — tell me what you want to know about tracking or shipping. If it is about a specific client job, track the TTG ID or linked phone number first so I can answer from the real D1 record.';
-}
-
-export async function handlePublicMaya(request, env) {
-  const url = new URL(request.url);
-  if (url.pathname !== '/api/maya' || request.method !== 'POST') return null;
-
-  const body = await request.clone().json().catch(() => ({}));
-  if (body.trackingId) return null;
-
-  const hunter = await callHunter(env, body.message);
-  return json({
-    ok: true,
-    reply: hunter || fallback(body.message),
-    source: hunter ? 'hunter' : 'tracking-fallback'
-  });
 }
