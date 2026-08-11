@@ -9,9 +9,9 @@ import {handleOpsAuth} from "./ops-auth.js";
 import {handleOpsApi} from "./ops-api.js";
 import {handleTransactionReserve} from "./transaction-reserve.js";
 import {handleDocOpsReserve} from "./docops-reserve.js";
+import {ADMIN_ORIGIN,adminOperationsReady} from "./admin-ops-handoff.js";
 
 const JSON_HEADERS={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
-const ADMIN_ORIGIN='https://admin.thetechguyds.com';
 
 async function serveAsset(request,env,path,contentType){
   if(!env.ASSETS)return null;
@@ -41,15 +41,6 @@ async function serveAppWithMayaOverride(request,env){
   if(!base.ok)return base;if(!override.ok)return base;
   const body=`${await base.text()}\n;${await override.text()}`;
   return new Response(body,{status:200,headers:{'content-type':'application/javascript; charset=utf-8','cache-control':'no-store, max-age=0, must-revalidate'}});
-}
-
-export async function adminOperationsReady(fetchImpl=fetch){
-  try{
-    const response=await fetchImpl(`${ADMIN_ORIGIN}/health`,{method:'GET',headers:{accept:'application/json'},cache:'no-store',signal:AbortSignal.timeout(3500)});
-    if(!response.ok)return false;
-    const data=await response.json().catch(()=>({}));
-    return data?.ok===true&&data?.uiRevision==='owner-control-plane-v2'&&data?.trackingIntegrated===true&&data?.documentsIntegrated===true;
-  }catch{return false}
 }
 
 export default {
