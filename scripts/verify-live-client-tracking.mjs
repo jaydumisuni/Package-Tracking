@@ -20,15 +20,16 @@ const health=await healthResponse.json();
 if(health.ok!==true||health.d1Bound!==true)throw new Error(`LIVE_D1_NOT_READY ${JSON.stringify(health)}`);
 
 const root=await (await request('/',{headers:{accept:'text/html'}})).text();
-for(const marker of ['TTG ID or phone number','Forgot your TTG ID?','Use the phone number linked to your TTG documents']){
+for(const marker of ['TTG ID or phone number','Forgot your TTG ID?','Use the phone number linked to your TTG documents','/maya-override.js?v=20260811b']){
   if(!root.includes(marker))throw new Error(`LIVE_CLIENT_UI_MARKER_MISSING ${marker}`);
 }
 
-const app=await (await request('/app.js',{headers:{accept:'application/javascript'}})).text();
+const deeplink=await (await request('/maya-override.js?v=20260811b',{headers:{accept:'application/javascript'}})).text();
 for(const marker of ["params.get('id')","Copy tracking link","searchForm.requestSubmit()","url.searchParams.set('id'"]){
-  if(!app.includes(marker))throw new Error(`LIVE_CLIENT_DEEPLINK_MARKER_MISSING ${marker}`);
+  if(!deeplink.includes(marker))throw new Error(`LIVE_CLIENT_DEEPLINK_MARKER_MISSING ${marker}`);
 }
-if(/searchParams\.set\(['"]phone['"]/.test(app))throw new Error('LIVE_CLIENT_LINK_MUST_NOT_EXPOSE_PHONE');
+if(/searchParams\.set\(['"]phone['"]/.test(deeplink))throw new Error('LIVE_CLIENT_LINK_MUST_NOT_EXPOSE_PHONE');
+new Function(deeplink);
 
 const missingIdResponse=await request('/api/track?id=TTG-PROOF-NOT-A-REAL-JOB',{headers:{accept:'application/json'}});
 const missingId=await missingIdResponse.json().catch(()=>({}));
