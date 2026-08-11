@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const source=fs.readFileSync(new URL('../public/maya-override.js',import.meta.url),'utf8');
+const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
 new Function(source);
 
+assert.match(html,/\/maya-override\.js\?v=20260811b/,'public Tracking page must load the deep-link runtime');
 assert.match(source,/params\.get\('id'\)/,'client deep link must accept ?id=');
 assert.match(source,/params\.get\('track'\)/,'client deep link may accept ?track= compatibility');
 assert.match(source,/url\.searchParams\.set\('id'/,'shared link must contain the TTG reference');
