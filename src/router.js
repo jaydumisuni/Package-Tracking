@@ -10,7 +10,7 @@ import {handleOpsApi} from "./ops-api.js";
 import {handleOpsPrivate} from "./ops-private.js";
 import {handleTransactionReserve} from "./transaction-reserve.js";
 import {handleDocOpsReserve} from "./docops-reserve.js";
-import {ADMIN_ORIGIN} from "./admin-ops-handoff.js";
+import {ADMIN_ORIGIN,adminOperationsReady} from "./admin-ops-handoff.js";
 
 const JSON_HEADERS={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
 
@@ -33,6 +33,7 @@ async function serveAuthHtml(request,env,path){
   return new Response(response.body,{status:response.status,headers});
 }
 async function serveExactBrandIcon(request,env){return serveAsset(request,env,'/ttg-ghost-main.svg','image/svg+xml')}
+async function serveOps(request,env){return serveAuthHtml(request,env,'/ops.html')}
 async function serveDocOpsConnect(request,env){return serveAuthHtml(request,env,'/docops-connect.html')}
 async function serveAppWithMayaOverride(request,env){
   if(!env.ASSETS)return null;
@@ -49,15 +50,22 @@ export default {
     if(url.pathname==='/site-icon.svg'){const icon=await serveExactBrandIcon(request,env);if(icon)return icon}
     if(url.pathname==='/app.js'){const app=await serveAppWithMayaOverride(request,env);if(app)return app}
 
-    // Tracking Operations is part of the owner Admin Console. Keep the D1 API
-    // here as its authority, but old operator URLs do not expose a second UI.
-    if((url.pathname==='/ops'||url.pathname==='/ops/')&&['GET','HEAD'].includes(request.method))return Response.redirect(`${ADMIN_ORIGIN}/#tracking`,302);
+    // Keep the old operator page only as a rollout/emergency fallback. As soon
+    // as the live Admin v2 health contract proves the integrated owner surface
+    // is ready, old /ops bookmarks automatically redirect into Admin.
+    if((url.pathname==='/ops'||url.pathname==='/ops/')&&['GET','HEAD'].includes(request.method)){
+      if(await adminOperationsReady())return Response.redirect(`${ADMIN_ORIGIN}/#tracking`,302);
+      const page=await serveOps(request,env);if(page)return page;
+    }
 
     // Scoped auth handoff only for the deterministic local fallback.
     if((url.pathname==='/ops/connect'||url.pathname==='/ops/connect/')&&request.method==='GET'){const page=await serveDocOpsConnect(request,env);if(page)return page}
-    if(url.pathname==='/d1-repair'||url.pathname==='/d1-repair.html')return Response.redirect(`${ADMIN_ORIGIN}/#tracking`,302);
+    if(url.pathname==='/d1-repair'||url.pathname==='/d1-repair.html'){
+      if(await adminOperationsReady())return Response.redirect(`${ADMIN_ORIGIN}/#tracking`,302);
+      return Response.redirect(new URL('/ops?view=system',request.url).toString(),302);
+    }
 
-    if(url.pathname==='/api/health')return new Response(JSON.stringify({ok:true,worker:'package-tracking',d1Bound:Boolean(env.TRACKING_DB),assetsBound:Boolean(env.ASSETS),ttgAuthBound:Boolean(env.TTG_AUTH),hunterConfigured:Boolean(env.HUNTER_API_URL),opsApi:true,opsPrivateOwnerRecovery:true,standaloneOpsUi:false,adminOperationsTarget:ADMIN_ORIGIN,docOpsConnect:true}),{status:200,headers:JSON_HEADERS});
+    if(url.pathname==='/api/health')return new Response(JSON.stringify({ok:true,worker:'package-tracking',d1Bound:Boolean(env.TRACKING_DB),assetsBound:Boolean(env.ASSETS),ttgAuthBound:Boolean(env.TTG_AUTH),hunterConfigured:Boolean(env.HUNTER_API_URL),opsApi:true,opsPrivateOwnerRecovery:true,standaloneOpsFallbackUntilAdminV2:true,adminOperationsTarget:ADMIN_ORIGIN,docOpsConnect:true}),{status:200,headers:JSON_HEADERS});
 
     const reserve=await handleTransactionReserve(request,env);if(reserve)return reserve;
     const opsAuth=await handleOpsAuth(request,env);if(opsAuth)return opsAuth;
