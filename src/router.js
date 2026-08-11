@@ -7,6 +7,7 @@ import {handlePublicMaya} from "./maya-public.js";
 import {handleD1Bootstrap} from "./d1-bootstrap.js";
 import {handleOpsAuth} from "./ops-auth.js";
 import {handleOpsApi} from "./ops-api.js";
+import {handleOpsPrivate} from "./ops-private.js";
 import {handleTransactionReserve} from "./transaction-reserve.js";
 import {handleDocOpsReserve} from "./docops-reserve.js";
 import {ADMIN_ORIGIN} from "./admin-ops-handoff.js";
@@ -48,40 +49,21 @@ export default {
     if(url.pathname==='/site-icon.svg'){const icon=await serveExactBrandIcon(request,env);if(icon)return icon}
     if(url.pathname==='/app.js'){const app=await serveAppWithMayaOverride(request,env);if(app)return app}
 
-    // Tracking Operations is now part of the owner Admin Console. Keep the D1
-    // Operations API here as the authority, but do not expose a second operator
-    // UI. Old bookmarks land in the integrated Admin Tracking workspace.
-    if((url.pathname==='/ops'||url.pathname==='/ops/')&&['GET','HEAD'].includes(request.method)){
-      return Response.redirect(`${ADMIN_ORIGIN}/#tracking`,302);
-    }
+    // Tracking Operations is part of the owner Admin Console. Keep the D1 API
+    // here as its authority, but old operator URLs do not expose a second UI.
+    if((url.pathname==='/ops'||url.pathname==='/ops/')&&['GET','HEAD'].includes(request.method))return Response.redirect(`${ADMIN_ORIGIN}/#tracking`,302);
 
-    // This scoped broker remains for the deterministic local Document
-    // Operations fallback. It is an auth handoff, not a standalone ops UI.
-    if((url.pathname==='/ops/connect'||url.pathname==='/ops/connect/')&&request.method==='GET'){
-      const page=await serveDocOpsConnect(request,env);if(page)return page;
-    }
+    // Scoped auth handoff only for the deterministic local fallback.
+    if((url.pathname==='/ops/connect'||url.pathname==='/ops/connect/')&&request.method==='GET'){const page=await serveDocOpsConnect(request,env);if(page)return page}
+    if(url.pathname==='/d1-repair'||url.pathname==='/d1-repair.html')return Response.redirect(`${ADMIN_ORIGIN}/#tracking`,302);
 
-    if(url.pathname==='/d1-repair'||url.pathname==='/d1-repair.html'){
-      return Response.redirect(`${ADMIN_ORIGIN}/#tracking`,302);
-    }
-
-    if(url.pathname==='/api/health')return new Response(JSON.stringify({
-      ok:true,
-      worker:'package-tracking',
-      d1Bound:Boolean(env.TRACKING_DB),
-      assetsBound:Boolean(env.ASSETS),
-      ttgAuthBound:Boolean(env.TTG_AUTH),
-      hunterConfigured:Boolean(env.HUNTER_API_URL),
-      opsApi:true,
-      standaloneOpsUi:false,
-      adminOperationsTarget:ADMIN_ORIGIN,
-      docOpsConnect:true
-    }),{status:200,headers:JSON_HEADERS});
+    if(url.pathname==='/api/health')return new Response(JSON.stringify({ok:true,worker:'package-tracking',d1Bound:Boolean(env.TRACKING_DB),assetsBound:Boolean(env.ASSETS),ttgAuthBound:Boolean(env.TTG_AUTH),hunterConfigured:Boolean(env.HUNTER_API_URL),opsApi:true,opsPrivateOwnerRecovery:true,standaloneOpsUi:false,adminOperationsTarget:ADMIN_ORIGIN,docOpsConnect:true}),{status:200,headers:JSON_HEADERS});
 
     const reserve=await handleTransactionReserve(request,env);if(reserve)return reserve;
     const opsAuth=await handleOpsAuth(request,env);if(opsAuth)return opsAuth;
     const docOpsReserve=await handleDocOpsReserve(request,env);if(docOpsReserve)return docOpsReserve;
     const d1=await handleD1Bootstrap(request,env);if(d1)return d1;
+    const opsPrivate=await handleOpsPrivate(request,env);if(opsPrivate)return opsPrivate;
     const opsApi=await handleOpsApi(request,env);if(opsApi)return opsApi;
     const maya=await handlePublicMaya(request,env);if(maya)return maya;
     const truth=enforceD1Truth(request,env);if(truth)return truth;
