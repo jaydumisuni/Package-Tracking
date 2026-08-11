@@ -11,6 +11,7 @@ import {handleTransactionReserve} from "./transaction-reserve.js";
 import {handleDocOpsReserve} from "./docops-reserve.js";
 
 const JSON_HEADERS={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
+const ADMIN_ORIGIN='https://admin.thetechguyds.com';
 
 async function serveAsset(request,env,path,contentType){
   if(!env.ASSETS)return null;
@@ -42,15 +43,32 @@ async function serveAppWithMayaOverride(request,env){
   return new Response(body,{status:200,headers:{'content-type':'application/javascript; charset=utf-8','cache-control':'no-store, max-age=0, must-revalidate'}});
 }
 
+export async function adminOperationsReady(fetchImpl=fetch){
+  try{
+    const response=await fetchImpl(`${ADMIN_ORIGIN}/health`,{method:'GET',headers:{accept:'application/json'},cache:'no-store',signal:AbortSignal.timeout(3500)});
+    if(!response.ok)return false;
+    const data=await response.json().catch(()=>({}));
+    return data?.ok===true&&data?.uiRevision==='owner-control-plane-v2'&&data?.trackingIntegrated===true&&data?.documentsIntegrated===true;
+  }catch{return false}
+}
+
 export default {
   async fetch(request,env,ctx){
     const url=new URL(request.url);
     if(url.pathname==='/site-icon.svg'){const icon=await serveExactBrandIcon(request,env);if(icon)return icon}
     if(url.pathname==='/app.js'){const app=await serveAppWithMayaOverride(request,env);if(app)return app}
-    if((url.pathname==='/ops'||url.pathname==='/ops/')&&request.method==='GET'){const page=await serveOps(request,env);if(page)return page}
+    if((url.pathname==='/ops'||url.pathname==='/ops/')&&request.method==='GET'){
+      if(await adminOperationsReady())return Response.redirect(`${ADMIN_ORIGIN}/#tracking`,302);
+      const page=await serveOps(request,env);if(page)return page;
+    }
+    // Keep this scoped broker for the local deterministic Document Operations
+    // fallback. It is not the standalone operator UI.
     if((url.pathname==='/ops/connect'||url.pathname==='/ops/connect/')&&request.method==='GET'){const page=await serveDocOpsConnect(request,env);if(page)return page}
-    if(url.pathname==='/d1-repair'||url.pathname==='/d1-repair.html')return Response.redirect(new URL('/ops?view=system',request.url).toString(),302);
-    if(url.pathname==='/api/health')return new Response(JSON.stringify({ok:true,worker:'package-tracking',d1Bound:Boolean(env.TRACKING_DB),assetsBound:Boolean(env.ASSETS),ttgAuthBound:Boolean(env.TTG_AUTH),hunterConfigured:Boolean(env.HUNTER_API_URL),opsConsole:true,docOpsConnect:true}),{status:200,headers:JSON_HEADERS});
+    if(url.pathname==='/d1-repair'||url.pathname==='/d1-repair.html'){
+      if(await adminOperationsReady())return Response.redirect(`${ADMIN_ORIGIN}/#tracking`,302);
+      return Response.redirect(new URL('/ops?view=system',request.url).toString(),302);
+    }
+    if(url.pathname==='/api/health')return new Response(JSON.stringify({ok:true,worker:'package-tracking',d1Bound:Boolean(env.TRACKING_DB),assetsBound:Boolean(env.ASSETS),ttgAuthBound:Boolean(env.TTG_AUTH),hunterConfigured:Boolean(env.HUNTER_API_URL),opsApi:true,standaloneOpsFallback:true,adminOperationsTarget:ADMIN_ORIGIN,docOpsConnect:true}),{status:200,headers:JSON_HEADERS});
 
     const reserve=await handleTransactionReserve(request,env);if(reserve)return reserve;
     const opsAuth=await handleOpsAuth(request,env);if(opsAuth)return opsAuth;
