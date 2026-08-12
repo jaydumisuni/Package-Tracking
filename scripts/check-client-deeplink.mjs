@@ -34,7 +34,8 @@ assert.match(maya,/page_context/,'Tracking Maya must pass safe tracking page con
 assert.doesNotMatch(maya,/function fallback\(message\)/,'Tracking Maya must not retain the old staged intent-answer fallback');
 assert.doesNotMatch(router,/serveAppWithMayaOverride/,'router must not concatenate Maya override into app.js and execute it twice');
 
-assert.match(html,/https:\/\/thetechguyds\.com\/favicon\.ico\?v=20260812a/,'Tracking must use the approved main-site browser icon');
-assert.match(html,/https:\/\/thetechguyds\.com\/favicon-32x32\.png\?v=20260812a/,'Tracking must use the approved 32px browser icon');
+assert.match(html,/\/ttg-brand-primary\.webp\?v=canonical-20260812/,'Tracking must use the canonical TTG company mark for its browser icon and header');
+assert.doesNotMatch(html,/thetechguyds\.com\/favicon/,'Tracking must not borrow the main-site-specific browser icon');
+assert.doesNotMatch(html,/\/ttg-ghost-main\.svg/,'Tracking must not use the retired local ghost placeholder');
 
 console.log('CLIENT_TRACKING_PUBLIC_UX_OK');
