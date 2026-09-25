@@ -44,11 +44,11 @@ export async function reserveMasterTransaction(db,now=new Date().toISOString()){
   return {sequence:Number(row.reserved),masterTransactionId:formatMasterTransactionId(row.reserved)};
 }
 
-function businessCoreConfigured(env){
+export function businessCoreConfigured(env){
   return Boolean(env.BUSINESS_CORE_URL||env.BUSINESS_CORE_TOKEN);
 }
 
-async function reserveFromBusinessCore(request,env){
+export async function reserveFromBusinessCore(request,env){
   if(!env.BUSINESS_CORE_URL||!env.BUSINESS_CORE_TOKEN){
     throw new Error('BUSINESS_CORE_CONFIGURATION_INCOMPLETE');
   }

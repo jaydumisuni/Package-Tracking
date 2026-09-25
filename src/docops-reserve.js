@@ -1,5 +1,5 @@
 import {requireOpsAccess} from './ops-auth.js';
-import {reserveMasterTransaction} from './transaction-reserve.js';
+import {businessCoreConfigured,reserveFromBusinessCore,reserveMasterTransaction} from './transaction-reserve.js';
 
 const H={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
 const J=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:H});
@@ -18,11 +18,14 @@ export async function handleDocOpsReserve(request,env){
   if(!auth.ok)return J({ok:false,error:auth.error},auth.status);
   if(!env.TRACKING_DB)return J({ok:false,error:'TRACKING_DB_NOT_BOUND'},503);
   try{
-    const reservation=await reserveMasterTransaction(env.TRACKING_DB);
+    const reservation=businessCoreConfigured(env)
+      ? await reserveFromBusinessCore(request,env)
+      : {...await reserveMasterTransaction(env.TRACKING_DB),reserved:true,authority:'legacy-d1'};
     await audit(env.TRACKING_DB,auth.user,reservation.masterTransactionId);
-    return J({ok:true,...reservation,reserved:true,user:auth.user});
+    return J({ok:true,...reservation,user:auth.user});
   }catch(error){
     console.error('staff transaction reservation failed',String(error));
-    return J({ok:false,error:'TRANSACTION_RESERVATION_FAILED'},503);
+    const authority=businessCoreConfigured(env)?'business-core':'legacy-d1';
+    return J({ok:false,error:'TRANSACTION_RESERVATION_FAILED',authority},503);
   }
 }
