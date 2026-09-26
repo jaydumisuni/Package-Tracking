@@ -8,7 +8,7 @@ The Worker serves both the static tracking UI and API routes.
 - `GET /api/track?id=TTG-...` -> public D1 tracking lookup
 - `GET /api/client-jobs?phone=...` -> D1 phone lookup for active jobs
 - `POST /api/maya` -> tracking-scoped Maya response
-- `POST /api/admin/transactions/reserve` -> atomically reserve the next D1-owned master `TTG-TXN-*` ID
+- `POST /api/admin/transactions/reserve` -> compatibility endpoint that delegates universal `TTG-TXN-*` allocation to Business Core
 - `POST /api/admin/transactions/start` -> canonical transaction-start endpoint: create/update the D1 job, aliases and all supplied client/contact phone links
 - `POST /api/admin/jobs/upsert` -> lower-level tracking-job upsert; also links supplied phone fields
 - `POST /api/admin/jobs/update` -> append a TTG tracking note/stage
@@ -43,7 +43,7 @@ A new trackable workflow that does not already have a master transaction must ca
 
 before assigning its public document aliases.
 
-The reservation is owned by D1. `tracking_sequences` keeps a monotonic transaction sequence and also catches up to any higher numeric `TTG-TXN-*` already present in `tracking_jobs`. A reservation is never manufactured in a browser, local document app, Hunter prompt, or Git repository.
+The reservation is owned by TTG Business Core/PostgreSQL. Package Tracking never allocates the universal `TTG-TXN-*` namespace locally. If Business Core is missing, partially configured, or unavailable, reservation fails closed with HTTP 503; D1 is never used as an allocator fallback. Existing D1 tracking rows remain tracking-domain truth/projection only.
 
 Synthetic response shape:
 

@@ -1,57 +1,32 @@
 const H={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
 const J=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:H});
 
-export const SEQUENCE_TABLE_SQL=`CREATE TABLE IF NOT EXISTS tracking_sequences (
-  name TEXT PRIMARY KEY,
-  current_value INTEGER NOT NULL DEFAULT 0,
-  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-)`;
-
-const NUMERIC_SUFFIX_SQL=`CASE
-  WHEN substr(master_transaction_id,1,8)='TTG-TXN-'
-   AND length(substr(master_transaction_id,9))>0
-   AND substr(master_transaction_id,9) NOT GLOB '*[^0-9]*'
-  THEN CAST(substr(master_transaction_id,9) AS INTEGER)
-  ELSE NULL
-END`;
-
-export const RESERVE_SQL=`INSERT INTO tracking_sequences(name,current_value,updated_at)
-SELECT 'transaction', COALESCE(MAX(${NUMERIC_SUFFIX_SQL}),0)+1, ?
-FROM tracking_jobs
-WHERE true
-ON CONFLICT(name) DO UPDATE SET
-  current_value=MAX(
-    tracking_sequences.current_value+1,
-    (SELECT COALESCE(MAX(${NUMERIC_SUFFIX_SQL}),0)+1 FROM tracking_jobs)
-  ),
-  updated_at=excluded.updated_at
-RETURNING current_value AS reserved`;
-
 function isAdmin(request,env){
   return Boolean(env.ADMIN_TOKEN)&&(request.headers.get('authorization')||'')===`Bearer ${env.ADMIN_TOKEN}`;
 }
 
-export function formatMasterTransactionId(value){
-  const n=Number(value);
-  if(!Number.isSafeInteger(n)||n<1)throw new Error('INVALID_TRANSACTION_SEQUENCE');
-  return `TTG-TXN-${String(n).padStart(6,'0')}`;
+export function businessCoreConfigurationState(env){
+  const hasUrl=Boolean(String(env.BUSINESS_CORE_URL||'').trim());
+  const hasToken=Boolean(String(env.BUSINESS_CORE_TOKEN||'').trim());
+  if(hasUrl&&hasToken)return 'ready';
+  if(!hasUrl&&!hasToken)return 'missing';
+  return 'partial';
 }
 
-export async function reserveMasterTransaction(db,now=new Date().toISOString()){
-  await db.prepare(SEQUENCE_TABLE_SQL).run();
-  const row=await db.prepare(RESERVE_SQL).bind(now).first();
-  if(!row?.reserved)throw new Error('TRANSACTION_RESERVATION_FAILED');
-  return {sequence:Number(row.reserved),masterTransactionId:formatMasterTransactionId(row.reserved)};
-}
-
-export function businessCoreConfigured(env){
-  return Boolean(env.BUSINESS_CORE_URL||env.BUSINESS_CORE_TOKEN);
+function configurationError(state){
+  const error=new Error(
+    state==='partial'
+      ? 'BUSINESS_CORE_CONFIGURATION_INCOMPLETE'
+      : 'BUSINESS_CORE_REQUIRED'
+  );
+  error.code=error.message;
+  error.status=503;
+  return error;
 }
 
 export async function reserveFromBusinessCore(request,env){
-  if(!env.BUSINESS_CORE_URL||!env.BUSINESS_CORE_TOKEN){
-    throw new Error('BUSINESS_CORE_CONFIGURATION_INCOMPLETE');
-  }
+  const state=businessCoreConfigurationState(env);
+  if(state!=='ready')throw configurationError(state);
 
   const idempotencyKey=(request.headers.get('x-idempotency-key')||crypto.randomUUID()).trim();
   const endpoint=new URL('/v1/transactions/reserve',env.BUSINESS_CORE_URL).toString();
@@ -71,17 +46,29 @@ export async function reserveFromBusinessCore(request,env){
 
   let payload=null;
   try{payload=await response.json()}catch{}
-  if(!response.ok||!payload?.ok||!payload?.masterTransactionId){
+  const masterTransactionId=String(payload?.masterTransactionId||'');
+  const sequence=Number(payload?.sequence);
+  const reserved=payload?.reserved;
+  const validMaster=/^TTG-TXN-\d{6,}$/.test(masterTransactionId);
+  if(
+    !response.ok||
+    !payload?.ok||
+    typeof reserved!=='boolean'||
+    !Number.isSafeInteger(sequence)||
+    sequence<1||
+    !validMaster
+  ){
     const error=new Error('BUSINESS_CORE_RESERVATION_FAILED');
+    error.code='BUSINESS_CORE_RESERVATION_FAILED';
     error.status=response.status;
     error.payload=payload;
     throw error;
   }
 
   return {
-    sequence:Number(payload.sequence),
-    masterTransactionId:String(payload.masterTransactionId),
-    reserved:Boolean(payload.reserved),
+    sequence,
+    masterTransactionId,
+    reserved,
     authority:'business-core'
   };
 }
@@ -91,22 +78,21 @@ export async function handleTransactionReserve(request,env){
   if(url.pathname!=='/api/admin/transactions/reserve'||request.method!=='POST')return null;
   if(!isAdmin(request,env))return J({ok:false,error:'unauthorized'},401);
 
-  if(businessCoreConfigured(env)){
-    try{
-      const reservation=await reserveFromBusinessCore(request,env);
-      return J({ok:true,...reservation});
-    }catch(error){
-      console.error('business core transaction reservation failed',String(error));
-      return J({ok:false,error:'business core transaction reservation failed',authority:'business-core'},503);
-    }
+  const state=businessCoreConfigurationState(env);
+  if(state!=='ready'){
+    const error=configurationError(state);
+    return J({ok:false,error:error.code,authority:'business-core'},503);
   }
 
-  if(!env.TRACKING_DB)return J({ok:false,error:'TRACKING_DB is not bound'},503);
   try{
-    const reservation=await reserveMasterTransaction(env.TRACKING_DB);
-    return J({ok:true,...reservation,reserved:true,authority:'legacy-d1'});
+    const reservation=await reserveFromBusinessCore(request,env);
+    return J({ok:true,...reservation});
   }catch(error){
-    console.error('transaction reservation failed',String(error));
-    return J({ok:false,error:'transaction reservation failed'},503);
+    console.error('business core transaction reservation failed',String(error));
+    return J({
+      ok:false,
+      error:error?.code||'BUSINESS_CORE_RESERVATION_FAILED',
+      authority:'business-core'
+    },503);
   }
 }
