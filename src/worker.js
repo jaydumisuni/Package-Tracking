@@ -1,3 +1,10 @@
+import {
+  businessCoreReferenceConfigured,
+  enqueueTrackingReferences,
+  syncBusinessCoreReferenceOutbox,
+  verifyBusinessCoreMaster
+} from "./business-core-references.js";
+
 const JSON_HEADERS = {
   'content-type': 'application/json; charset=utf-8',
   'cache-control': 'no-store'
@@ -112,11 +119,44 @@ async function resolveJobId(db, reference) {
   return row?.job_id || null;
 }
 
-async function upsertJob(db, body) {
+async function upsertJob(db, body, env) {
   const job = body.job || {};
   const master = normalizeRef(job.masterTransactionId);
   const publicReference = normalizeRef(job.publicReference || master);
   if (!master) return json({ ok: false, error: 'masterTransactionId required' }, 400);
+
+  if (businessCoreReferenceConfigured(env)) {
+    try {
+      await verifyBusinessCoreMaster(master, env);
+    } catch (error) {
+      console.error('business core master verification failed', String(error));
+      return json({
+        ok: false,
+        error: error?.message || 'business core master verification failed',
+        authority: 'business-core'
+      }, Number(error?.statusCode) || 503);
+    }
+  }
+
+  const candidateAliases = new Set(
+    [master, publicReference, ...(body.aliases || []).map(normalizeRef)].filter(Boolean)
+  );
+  const existingJob = await db.prepare(
+    'SELECT id FROM tracking_jobs WHERE master_transaction_id=?1'
+  ).bind(master).first();
+
+  for (const alias of candidateAliases) {
+    const owner = await db.prepare(
+      'SELECT job_id FROM tracking_aliases WHERE alias=?1 LIMIT 1'
+    ).bind(alias).first();
+    if (owner && (!existingJob || Number(owner.job_id) !== Number(existingJob.id))) {
+      return json({
+        ok: false,
+        error: 'tracking alias already belongs to another master transaction',
+        alias
+      }, 409);
+    }
+  }
 
   await db.prepare(`
     INSERT INTO tracking_jobs(
@@ -172,15 +212,66 @@ async function upsertJob(db, body) {
   ).run();
 
   const saved = await db.prepare('SELECT id FROM tracking_jobs WHERE master_transaction_id=?1').bind(master).first();
-  const aliases = new Set([master, publicReference, ...(body.aliases || []).map(normalizeRef)].filter(Boolean));
-  for (const alias of aliases) {
+  for (const alias of candidateAliases) {
     await db.prepare(`
       INSERT INTO tracking_aliases(alias, job_id) VALUES(?1,?2)
-      ON CONFLICT(alias) DO UPDATE SET job_id=excluded.job_id
+      ON CONFLICT(alias) DO NOTHING
     `).bind(alias, saved.id).run();
+    const owner = await db.prepare(
+      'SELECT job_id FROM tracking_aliases WHERE alias=?1 LIMIT 1'
+    ).bind(alias).first();
+    if (!owner || Number(owner.job_id) !== Number(saved.id)) {
+      return json({
+        ok: false,
+        error: 'tracking alias ownership conflict',
+        alias
+      }, 409);
+    }
   }
 
-  return json({ ok: true, id: saved.id, masterTransactionId: master, aliases: [...aliases] });
+  const responsePayload = {
+    ok: true,
+    id: saved.id,
+    masterTransactionId: master,
+    aliases: [...candidateAliases]
+  };
+
+  if (businessCoreReferenceConfigured(env)) {
+    try {
+      await enqueueTrackingReferences(
+        db,
+        master,
+        responsePayload.aliases,
+        {
+          tracking_job_id: saved.id,
+          public_reference: publicReference,
+          store: 'package-tracking-d1'
+        }
+      );
+      const sync = await syncBusinessCoreReferenceOutbox(env, {
+        masterTransactionId: master,
+        limit: Math.max(1, responsePayload.aliases.length)
+      });
+      responsePayload.businessCoreReferenceSync =
+        sync.terminal > 0 ? 'blocked' : sync.pending > 0 ? 'pending' : 'synced';
+      responsePayload.businessCoreReferencePending = sync.pending;
+      responsePayload.businessCoreReferenceTerminal = sync.terminal;
+      return json(
+        responsePayload,
+        sync.terminal > 0 ? 409 : sync.pending > 0 ? 202 : 200
+      );
+    } catch (error) {
+      console.error('business core tracking reference sync failed', String(error));
+      return json({
+        ...responsePayload,
+        ok: false,
+        error: error?.message || 'business core tracking reference sync failed',
+        businessCoreReferenceSync: 'blocked'
+      }, Number(error?.statusCode) || 503);
+    }
+  }
+
+  return json(responsePayload);
 }
 
 async function addUpdate(db, body) {
@@ -437,7 +528,7 @@ export default {
       if (!await requireAdmin(request, env)) return json({ ok: false, error: 'unauthorized' }, 401);
       if (!env.TRACKING_DB) return json({ ok: false, error: 'TRACKING_DB is not bound' }, 503);
       const body = await request.json().catch(() => ({}));
-      if (url.pathname === '/api/admin/jobs/upsert' && request.method === 'POST') return upsertJob(env.TRACKING_DB, body);
+      if (url.pathname === '/api/admin/jobs/upsert' && request.method === 'POST') return upsertJob(env.TRACKING_DB, body, env);
       if (url.pathname === '/api/admin/jobs/update' && request.method === 'POST') return addUpdate(env.TRACKING_DB, body);
       if (url.pathname === '/api/admin/carriers/link' && request.method === 'POST') return linkCarrier(env.TRACKING_DB, body);
       if (url.pathname === '/api/admin/carriers/sync' && request.method === 'POST') {

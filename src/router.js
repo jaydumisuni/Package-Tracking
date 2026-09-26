@@ -10,6 +10,7 @@ import {handleOpsApi} from "./ops-api.js";
 import {handleOpsPrivate} from "./ops-private.js";
 import {handleTransactionReserve} from "./transaction-reserve.js";
 import {handleDocOpsReserve} from "./docops-reserve.js";
+import {syncBusinessCoreReferenceOutbox} from "./business-core-references.js";
 import {ADMIN_ORIGIN} from "./admin-ops-handoff.js";
 
 const JSON_HEADERS={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
@@ -64,5 +65,9 @@ export default {
     if(!env.TRACKING_DB)return;
     const wrapped=wrapContext(ctx,env);
     if(typeof core.scheduled==='function')core.scheduled(event,env,wrapped);else ctx.waitUntil(normalizeShippingPolicy(env));
+    ctx.waitUntil(
+      syncBusinessCoreReferenceOutbox(env)
+        .catch(error=>console.error("business core reference sync failed",String(error)))
+    );
   }
 };

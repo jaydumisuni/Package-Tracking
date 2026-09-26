@@ -154,6 +154,8 @@ async function transactionStart(request,env,ctx,core){
   const job=body.job||{};
   if(!job.masterTransactionId&&body.masterTransactionId)job.masterTransactionId=body.masterTransactionId;
   if(!job.publicReference&&body.publicReference)job.publicReference=body.publicReference;
+  const master=N(job.masterTransactionId);
+  if(!master)return J({ok:false,error:"masterTransactionId required at transaction start"},400);
   const normalizedBody={...body,job};
 
   const coreRequest=new Request(new URL("/api/admin/jobs/upsert",request.url),{

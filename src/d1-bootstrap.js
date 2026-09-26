@@ -3,7 +3,7 @@ import {requireOpsAccess} from './ops-auth.js';
 const H={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
 const J=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:H});
 
-const REQUIRED=['tracking_jobs','tracking_aliases','tracking_updates','carrier_shipments','handover_tokens','client_job_links','tracking_staff_audit'];
+const REQUIRED=['tracking_jobs','tracking_aliases','tracking_updates','carrier_shipments','handover_tokens','client_job_links','tracking_staff_audit','business_core_reference_outbox'];
 
 const SCHEMA=[
 `CREATE TABLE IF NOT EXISTS tracking_jobs (
@@ -46,6 +46,8 @@ const SCHEMA=[
 `CREATE TABLE IF NOT EXISTS tracking_staff_audit (id INTEGER PRIMARY KEY AUTOINCREMENT,actor_user_id TEXT NOT NULL,actor_email TEXT NOT NULL,actor_role TEXT NOT NULL,action TEXT NOT NULL,reference TEXT,summary TEXT,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
 `CREATE INDEX IF NOT EXISTS idx_tracking_staff_audit_created ON tracking_staff_audit(created_at DESC)`,
 `CREATE INDEX IF NOT EXISTS idx_tracking_staff_audit_reference ON tracking_staff_audit(reference, created_at DESC)`,
+`CREATE TABLE IF NOT EXISTS business_core_reference_outbox (id INTEGER PRIMARY KEY AUTOINCREMENT,master_transaction_id TEXT NOT NULL,reference_type TEXT NOT NULL DEFAULT 'public_reference',reference_value TEXT NOT NULL,metadata_json TEXT NOT NULL DEFAULT '{}',attempts INTEGER NOT NULL DEFAULT 0,next_attempt_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,last_error TEXT,terminal_error INTEGER NOT NULL DEFAULT 0,synced_at TEXT,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,UNIQUE(reference_type, reference_value))`,
+`CREATE INDEX IF NOT EXISTS idx_business_core_reference_outbox_pending ON business_core_reference_outbox(synced_at,terminal_error,next_attempt_at,id)`,
 `CREATE TABLE IF NOT EXISTS tracking_sequences (name TEXT PRIMARY KEY,current_value INTEGER NOT NULL DEFAULT 0,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`
 ];
 

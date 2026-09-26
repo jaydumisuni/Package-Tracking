@@ -97,3 +97,22 @@ CREATE TABLE IF NOT EXISTS tracking_sequences (
   current_value INTEGER NOT NULL DEFAULT 0,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS business_core_reference_outbox (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  master_transaction_id TEXT NOT NULL,
+  reference_type TEXT NOT NULL DEFAULT 'public_reference',
+  reference_value TEXT NOT NULL,
+  metadata_json TEXT NOT NULL DEFAULT '{}',
+  attempts INTEGER NOT NULL DEFAULT 0,
+  next_attempt_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_error TEXT,
+  terminal_error INTEGER NOT NULL DEFAULT 0,
+  synced_at TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(reference_type, reference_value)
+);
+
+CREATE INDEX IF NOT EXISTS idx_business_core_reference_outbox_pending
+  ON business_core_reference_outbox(synced_at, terminal_error, next_attempt_at, id);

@@ -24,8 +24,8 @@ Public tracking uses TTG references only. Supplier and carrier tracking numbers 
 - `GET /api/track?id=TTG-...` — client tracking lookup
 - phone-number lookup when the client phone is linked to the D1 job
 - `POST /api/maya` — tracking-scoped Maya assistance
-- authenticated admin endpoints — reserve master transaction IDs, create/update jobs, notes and private carrier links
-- document/Hunter workflows reserve or reuse one D1-owned master transaction for trackable jobs
+- authenticated admin endpoints — reserve Business Core master transaction IDs, create/update jobs, notes and private carrier links
+- document/Hunter workflows reserve or reuse one Business Core-owned master transaction for trackable jobs; D1 remains tracking-state authority
 - scheduled carrier sync — checks active carrier links when provider credentials are configured
 
 The first carrier leg can represent seller → shipping company/forwarder. For that leg, the public TTG stage remains `seller_shipped` while the parcel is moving through the seller's carrier; when the carrier reports delivery to the shipping company/forwarder, TTG can advance automatically to `shipping_company_received`.
@@ -51,6 +51,13 @@ Create a Cloudflare D1 database, apply `schema.sql`, then bind it to the Worker 
 Add an admin secret:
 
 `ADMIN_TOKEN`
+
+When Business Core migration is enabled, also configure:
+
+- `BUSINESS_CORE_URL` - internal Business Core base URL
+- `BUSINESS_CORE_TOKEN` - internal bearer secret
+
+`transactions/start` verifies the master transaction in Business Core before writing a new D1 tracking job. Tracking public references are then registered back to Business Core through a durable D1 outbox. D1 remains authoritative for tracking stages, notes, phones and carrier data.
 
 Real customer data and real carrier tracking numbers must be entered into D1/admin APIs, never committed to GitHub.
 

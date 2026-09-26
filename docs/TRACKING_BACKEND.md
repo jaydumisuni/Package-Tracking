@@ -8,14 +8,14 @@ The Worker serves both the static tracking UI and API routes.
 - `GET /api/track?id=TTG-...` -> public D1 tracking lookup
 - `GET /api/client-jobs?phone=...` -> D1 phone lookup for active jobs
 - `POST /api/maya` -> tracking-scoped Maya response
-- `POST /api/admin/transactions/reserve` -> atomically reserve the next D1-owned master `TTG-TXN-*` ID
-- `POST /api/admin/transactions/start` -> canonical transaction-start endpoint: create/update the D1 job, aliases and all supplied client/contact phone links
+- `POST /api/admin/transactions/reserve` -> reserve/recover the master `TTG-TXN-*` through Business Core when configured; legacy D1 allocation remains compatibility-only
+- `POST /api/admin/transactions/start` -> canonical transaction-start endpoint: verify the Business Core master, create/update the D1 job/aliases/phones, then register Tracking public references back to Business Core
 - `POST /api/admin/jobs/upsert` -> lower-level tracking-job upsert; also links supplied phone fields
 - `POST /api/admin/jobs/update` -> append a TTG tracking note/stage
 - `POST /api/admin/client-phone/link` -> historical repair/backfill for one or more phone links; not normal creation flow
 - `POST /api/admin/carriers/link` -> link a private carrier number to a TTG job
 - `POST /api/admin/carriers/sync` -> force carrier sync
-- scheduled trigger -> checks active private carrier links every 15 minutes
+- scheduled trigger -> checks active private carrier links and retries pending Business Core Tracking-reference sync every 15 minutes
 
 ## D1 source of truth
 
@@ -43,7 +43,9 @@ A new trackable workflow that does not already have a master transaction must ca
 
 before assigning its public document aliases.
 
-The reservation is owned by D1. `tracking_sequences` keeps a monotonic transaction sequence and also catches up to any higher numeric `TTG-TXN-*` already present in `tracking_jobs`. A reservation is never manufactured in a browser, local document app, Hunter prompt, or Git repository.
+Business Core is the permanent master-transaction authority when `BUSINESS_CORE_URL` and `BUSINESS_CORE_TOKEN` are configured. Package Tracking delegates reservation to Business Core and must not fall back to D1 merely because Business Core is temporarily unavailable.
+
+`tracking_sequences` remains only a legacy compatibility allocator for environments that have not yet enabled Business Core. A reservation is never manufactured in a browser, local document app, Hunter prompt, or Git repository.
 
 Synthetic response shape:
 
@@ -66,7 +68,13 @@ When a new TTG master transaction starts, the creating system should call:
 
 `POST /api/admin/transactions/start`
 
-This is the normal creation boundary for document generation, Hunter and staff automation. It creates/updates the tracking job and immediately links every valid client/contact phone supplied with that same transaction.
+This is the normal creation boundary for document generation, Hunter and staff automation.
+
+When Business Core is configured, the endpoint first verifies that `masterTransactionId` already exists in Business Core. Unknown masters are rejected before D1 is mutated.
+
+After D1 commits the tracking job and aliases, each Tracking public reference is queued in `business_core_reference_outbox` and immediately submitted to Business Core as `domain=tracking`, `reference_type=public_reference`. The transaction-start wrapper then links the supplied client/contact phones to that same D1 job.
+
+A temporary Business Core reference-sync failure returns a truthful `202`/`pending` result while the durable D1 queue retries on the scheduled trigger. A cross-master immutable-reference conflict is terminal and returns `409`. Tracking stages, notes, phones and private carrier facts remain D1-owned truth; Business Core stores only the durable cross-domain relationship.
 
 Synthetic payload shape:
 
@@ -164,3 +172,12 @@ Maya is restricted to the selected D1 tracking record and shipping/procurement c
 - linked TTG documents
 
 When Hunter is available, `/api/maya` may call Hunter while preserving the same selected D1 tracking context.
+
+
+## Business Core reference sync queue
+
+`business_core_reference_outbox` is a D1 delivery queue for cross-domain relationship registration only. It does not store or manufacture tracking stages.
+
+Natural-key ownership follows Business Core's immutable relationship law: one Tracking `public_reference` cannot move to another master transaction. Successful retries are idempotent.
+
+The queue records attempts, next retry time, last error, terminal conflicts and sync completion. Scheduled sync runs every 15 minutes alongside carrier maintenance.
