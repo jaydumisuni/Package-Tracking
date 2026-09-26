@@ -8,7 +8,7 @@ The Worker serves both the static tracking UI and API routes.
 - `GET /api/track?id=TTG-...` -> public D1 tracking lookup
 - `GET /api/client-jobs?phone=...` -> D1 phone lookup for active jobs
 - `POST /api/maya` -> tracking-scoped Maya response
-- `POST /api/admin/transactions/reserve` -> atomically reserve the next D1-owned master `TTG-TXN-*` ID
+- `POST /api/admin/transactions/reserve` -> delegate master `TTG-TXN-*` allocation to Business Core
 - `POST /api/admin/transactions/start` -> canonical transaction-start endpoint: create/update the D1 job, aliases and all supplied client/contact phone links
 - `POST /api/admin/jobs/upsert` -> lower-level tracking-job upsert; also links supplied phone fields
 - `POST /api/admin/jobs/update` -> append a TTG tracking note/stage
@@ -43,7 +43,9 @@ A new trackable workflow that does not already have a master transaction must ca
 
 before assigning its public document aliases.
 
-The reservation is owned by D1. `tracking_sequences` keeps a monotonic transaction sequence and also catches up to any higher numeric `TTG-TXN-*` already present in `tracking_jobs`. A reservation is never manufactured in a browser, local document app, Hunter prompt, or Git repository.
+The reservation is owned by Business Core/PostgreSQL. Package Tracking must never mint a fallback `TTG-TXN-*` from D1.
+
+If `BUSINESS_CORE_URL` / `BUSINESS_CORE_TOKEN` are missing, partially configured, or Business Core is unavailable, reservation fails closed. Existing historical `tracking_sequences` data may remain in D1 for migration evidence, but runtime reservation code does not read it.
 
 Synthetic response shape:
 
@@ -59,6 +61,28 @@ Synthetic response shape:
 Reserved IDs are not recycled if a later document workflow is cancelled. Gaps are acceptable; duplicate transaction identity is not.
 
 An existing transaction must reuse its current master ID and must not reserve a second ID for another quote, invoice, receipt, disclaimer or later tracking stage.
+
+### Tracking -> Business Core relationship sync
+
+D1 remains the tracking-state authority, but every D1 tracking job must be attached to its existing Business Core master transaction.
+
+For a brand-new tracking job:
+
+1. verify the supplied `TTG-TXN-*` exists in Business Core;
+2. write the D1 tracking job;
+3. bind `domain=tracking`, `reference_type=job`, `reference_value=<master transaction>` through Business Core;
+4. mark `business_core_linked_at` only after Core confirms the reference.
+
+If step 3 fails after the D1 write, the endpoint reports `BUSINESS_CORE_REFERENCE_SYNC_PENDING` instead of false success. The D1 row retains the sync error/attempt timestamp and the existing scheduled Worker retries unsynced rows.
+
+An already-linked D1 job does not need Business Core online for normal tracking-stage updates. This keeps tracking truth available while preventing split master-identity authority.
+
+Required runtime configuration:
+
+- `BUSINESS_CORE_URL` - Business Core service base URL.
+- `BUSINESS_CORE_TOKEN` - Worker secret used only for server-to-server Business Core calls.
+
+Apply `migrations/004_business_core_reference_sync.sql` before enabling this adapter.
 
 ## Transaction start — canonical creation flow
 

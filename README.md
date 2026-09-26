@@ -25,7 +25,7 @@ Public tracking uses TTG references only. Supplier and carrier tracking numbers 
 - phone-number lookup when the client phone is linked to the D1 job
 - `POST /api/maya` — tracking-scoped Maya assistance
 - authenticated admin endpoints — reserve master transaction IDs, create/update jobs, notes and private carrier links
-- document/Hunter workflows reserve or reuse one D1-owned master transaction for trackable jobs
+- document/Hunter workflows reserve or reuse one Business Core-owned master transaction for trackable jobs; D1 stores tracking truth only
 - scheduled carrier sync — checks active carrier links when provider credentials are configured
 
 The first carrier leg can represent seller → shipping company/forwarder. For that leg, the public TTG stage remains `seller_shipped` while the parcel is moving through the seller's carrier; when the carrier reports delivery to the shipping company/forwarder, TTG can advance automatically to `shipping_company_received`.
@@ -68,3 +68,20 @@ Hunter can later take over the same admin/API contract when maintenance is compl
 ## Source-recovery rule
 
 GitHub source, deployed Worker behavior, D1 migrations, and frontend route expectations must stay aligned. If documentation/frontend references a route that the committed Worker does not expose, treat it as an implementation/recovery mismatch rather than assuming the route is safely reproduced from GitHub.
+
+## Business Core master authority
+
+Business Core is the sole permanent allocator for `TTG-TXN-*`.
+
+Package Tracking owns D1 tracking facts, stages, carrier legs, phone links, and public tracking presentation. It does not mint fallback master IDs.
+
+Runtime rules:
+
+- `/api/admin/transactions/reserve` delegates to Business Core and fails closed when Business Core is not configured or unavailable.
+- A new D1 tracking job must prove its supplied master transaction exists in Business Core before D1 creation.
+- After D1 creation, Tracking binds one immutable Business Core domain reference: `domain=tracking`, `reference_type=job`, `reference_value=<TTG-TXN-*>`.
+- D1 stores `business_core_linked_at`, last sync error, and last attempt time only as synchronization state.
+- The existing scheduled Worker retry automatically re-attempts unsynced Tracking references.
+- Existing already-linked D1 jobs remain usable for tracking-stage updates during a temporary Business Core outage.
+
+Production activation requires the D1 Business Core sync migration, `BUSINESS_CORE_URL`, and the `BUSINESS_CORE_TOKEN` Worker secret. Do not deploy the fail-closed adapter until the production Business Core endpoint is ready.

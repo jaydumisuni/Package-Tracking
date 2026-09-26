@@ -10,6 +10,7 @@ import {handleOpsApi} from "./ops-api.js";
 import {handleOpsPrivate} from "./ops-private.js";
 import {handleTransactionReserve} from "./transaction-reserve.js";
 import {handleDocOpsReserve} from "./docops-reserve.js";
+import {businessCoreConfigured,syncPendingBusinessCoreReferences} from './business-core.js';
 import {ADMIN_ORIGIN} from "./admin-ops-handoff.js";
 
 const JSON_HEADERS={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
@@ -45,7 +46,7 @@ export default {
     if((url.pathname==='/ops/connect'||url.pathname==='/ops/connect/')&&request.method==='GET'){const page=await serveDocOpsConnect(request,env);if(page)return page}
     if(url.pathname==='/d1-repair'||url.pathname==='/d1-repair.html')return Response.redirect(`${ADMIN_ORIGIN}/#tracking`,302);
 
-    if(url.pathname==='/api/health')return new Response(JSON.stringify({ok:true,worker:'package-tracking',d1Bound:Boolean(env.TRACKING_DB),assetsBound:Boolean(env.ASSETS),ttgAuthBound:Boolean(env.TTG_AUTH),hunterConfigured:Boolean(env.HUNTER_API_URL),opsApi:true,opsPrivateOwnerRecovery:true,standaloneOpsUi:false,adminOperationsTarget:ADMIN_ORIGIN,docOpsConnect:true}),{status:200,headers:JSON_HEADERS});
+    if(url.pathname==='/api/health')return new Response(JSON.stringify({ok:true,worker:'package-tracking',d1Bound:Boolean(env.TRACKING_DB),assetsBound:Boolean(env.ASSETS),ttgAuthBound:Boolean(env.TTG_AUTH),hunterConfigured:Boolean(env.HUNTER_API_URL),businessCoreConfigured:businessCoreConfigured(env),opsApi:true,opsPrivateOwnerRecovery:true,standaloneOpsUi:false,adminOperationsTarget:ADMIN_ORIGIN,docOpsConnect:true}),{status:200,headers:JSON_HEADERS});
 
     const reserve=await handleTransactionReserve(request,env);if(reserve)return reserve;
     const opsAuth=await handleOpsAuth(request,env);if(opsAuth)return opsAuth;
@@ -63,6 +64,9 @@ export default {
   async scheduled(event,env,ctx){
     if(!env.TRACKING_DB)return;
     const wrapped=wrapContext(ctx,env);
+    ctx.waitUntil(syncPendingBusinessCoreReferences(env).catch(error=>{
+      console.error('business core reference sync failed',String(error));
+    }));
     if(typeof core.scheduled==='function')core.scheduled(event,env,wrapped);else ctx.waitUntil(normalizeShippingPolicy(env));
   }
 };

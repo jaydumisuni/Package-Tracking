@@ -22,7 +22,10 @@ CREATE TABLE IF NOT EXISTS tracking_jobs (
   status_note TEXT,
   current_location TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  business_core_linked_at TEXT,
+  business_core_link_error TEXT,
+  business_core_link_attempt_at TEXT
 );
 
 CREATE TABLE IF NOT EXISTS tracking_aliases (
@@ -33,6 +36,7 @@ CREATE TABLE IF NOT EXISTS tracking_aliases (
 
 CREATE INDEX IF NOT EXISTS idx_tracking_alias_job ON tracking_aliases(job_id);
 CREATE INDEX IF NOT EXISTS idx_tracking_jobs_stage ON tracking_jobs(current_stage);
+CREATE INDEX IF NOT EXISTS idx_tracking_jobs_business_core_pending ON tracking_jobs(business_core_linked_at,business_core_link_attempt_at,id);
 
 CREATE TABLE IF NOT EXISTS tracking_updates (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -92,8 +96,19 @@ CREATE TABLE IF NOT EXISTS client_job_links (
 CREATE INDEX IF NOT EXISTS idx_client_job_links_phone ON client_job_links(phone_normalized);
 CREATE INDEX IF NOT EXISTS idx_client_job_links_job ON client_job_links(job_id);
 
-CREATE TABLE IF NOT EXISTS tracking_sequences (
-  name TEXT PRIMARY KEY,
-  current_value INTEGER NOT NULL DEFAULT 0,
-  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS tracking_staff_audit (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  actor_user_id TEXT NOT NULL,
+  actor_email TEXT NOT NULL,
+  actor_role TEXT NOT NULL,
+  action TEXT NOT NULL,
+  reference TEXT,
+  summary TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_tracking_staff_audit_created
+ON tracking_staff_audit(created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_tracking_staff_audit_reference
+ON tracking_staff_audit(reference, created_at DESC);

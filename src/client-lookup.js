@@ -1,3 +1,9 @@
+import {
+  getTrackingAuthorityState,
+  syncTrackingReference,
+  verifyBusinessCoreTransaction
+} from './business-core.js';
+
 const H={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
 const J=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:H});
 const N=value=>String(value||"").trim().toUpperCase();
@@ -114,35 +120,80 @@ async function upsertAndLink(request,env,ctx,core,{transactionStart=false}={}){
   const job=body.job||{};
   const master=N(job.masterTransactionId||body.masterTransactionId);
   if(transactionStart&&!master)return J({ok:false,error:"masterTransactionId required at transaction start"},400);
+  if(!env.TRACKING_DB)return J({ok:false,error:"TRACKING_DB is not bound"},503);
 
-  const response=await core.fetch(request,env,ctx);
-  if(!response.ok||!env.TRACKING_DB)return response;
+  let authorityState=null;
+  if(master){
+    try{
+      authorityState=await getTrackingAuthorityState(env.TRACKING_DB,master);
+    }catch(error){
+      console.error("business core sync state unavailable",String(error));
+      return J({ok:false,error:"BUSINESS_CORE_SYNC_SCHEMA_NOT_READY",authority:"business-core"},503);
+    }
 
-  const payload=await response.clone().json().catch(()=>null);
-  const jobId=payload?.id||await resolveJobId(env.TRACKING_DB,master||job.publicReference||body.publicReference||"");
-  if(!jobId)return response;
-
-  if(!phones.length){
-    const data=payload||{ok:true};
-    data.phoneLinked=false;
-    data.phoneCount=0;
-    data.phoneLinkWarning="No client/contact phone was supplied with this transaction. ID tracking still works, but phone lookup will not.";
-    return J(data,response.status);
+    if(!authorityState){
+      try{
+        await verifyBusinessCoreTransaction(env,master);
+      }catch(error){
+        console.error("business core master verification failed",String(error));
+        return J({
+          ok:false,
+          error:String(error?.message||"BUSINESS_CORE_MASTER_VERIFICATION_FAILED"),
+          authority:"business-core"
+        },Number(error?.statusCode)||503);
+      }
+    }
   }
 
-  try{await linkPhones(env.TRACKING_DB,jobId,phones)}
-  catch(error){
-    console.error("job saved but phone links failed",String(error));
-    const data=payload||{ok:true};
-    data.phoneLinked=false;
-    data.phoneLinkWarning="phone lookup migration is not applied";
-    return J(data,response.status);
+  const response=await core.fetch(request,env,ctx);
+  if(!response.ok)return response;
+
+  const payload=await response.clone().json().catch(()=>null);
+  const jobId=payload?.id||await resolveJobId(
+    env.TRACKING_DB,
+    master||job.publicReference||body.publicReference||""
+  );
+  if(!jobId)return response;
+
+  let authoritySync={ok:true,linked:Boolean(authorityState?.business_core_linked_at)};
+  if(master&&!authoritySync.linked){
+    authoritySync=await syncTrackingReference(env.TRACKING_DB,env,{
+      masterTransactionId:master,
+      jobId,
+      publicReference:job.publicReference||body.publicReference||master
+    });
   }
 
   const data=payload||{ok:true};
-  data.phoneLinked=true;
-  data.phones=phones.map(maskPhone);
-  data.phoneCount=phones.length;
+  if(!phones.length){
+    data.phoneLinked=false;
+    data.phoneCount=0;
+    data.phoneLinkWarning="No client/contact phone was supplied with this transaction. ID tracking still works, but phone lookup will not.";
+  }else{
+    try{
+      await linkPhones(env.TRACKING_DB,jobId,phones);
+      data.phoneLinked=true;
+      data.phones=phones.map(maskPhone);
+      data.phoneCount=phones.length;
+    }catch(error){
+      console.error("job saved but phone links failed",String(error));
+      data.phoneLinked=false;
+      data.phoneLinkWarning="phone lookup migration is not applied";
+    }
+  }
+
+  if(master){
+    data.businessCoreLinked=Boolean(authoritySync.linked);
+    data.authoritySync=authoritySync.linked?"linked":"pending";
+    if(!authoritySync.linked){
+      data.ok=false;
+      data.trackingSaved=true;
+      data.error="BUSINESS_CORE_REFERENCE_SYNC_PENDING";
+      data.businessCoreError=authoritySync.error||"BUSINESS_CORE_REFERENCE_SYNC_FAILED";
+      return J(data,503);
+    }
+  }
+
   return J(data,response.status);
 }
 

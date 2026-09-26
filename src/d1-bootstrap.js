@@ -4,6 +4,7 @@ const H={"content-type":"application/json; charset=utf-8","cache-control":"no-st
 const J=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:H});
 
 const REQUIRED=['tracking_jobs','tracking_aliases','tracking_updates','carrier_shipments','handover_tokens','client_job_links','tracking_staff_audit'];
+const REQUIRED_TRACKING_JOB_COLUMNS=['business_core_linked_at','business_core_link_error','business_core_link_attempt_at'];
 
 const SCHEMA=[
 `CREATE TABLE IF NOT EXISTS tracking_jobs (
@@ -28,11 +29,15 @@ const SCHEMA=[
   status_note TEXT,
   current_location TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  business_core_linked_at TEXT,
+  business_core_link_error TEXT,
+  business_core_link_attempt_at TEXT
 )`,
 `CREATE TABLE IF NOT EXISTS tracking_aliases (alias TEXT PRIMARY KEY,job_id INTEGER NOT NULL,FOREIGN KEY(job_id) REFERENCES tracking_jobs(id) ON DELETE CASCADE)`,
 `CREATE INDEX IF NOT EXISTS idx_tracking_alias_job ON tracking_aliases(job_id)`,
 `CREATE INDEX IF NOT EXISTS idx_tracking_jobs_stage ON tracking_jobs(current_stage)`,
+`CREATE INDEX IF NOT EXISTS idx_tracking_jobs_business_core_pending ON tracking_jobs(business_core_linked_at,business_core_link_attempt_at,id)`,
 `CREATE TABLE IF NOT EXISTS tracking_updates (id INTEGER PRIMARY KEY AUTOINCREMENT,job_id INTEGER NOT NULL,stage TEXT,note TEXT NOT NULL,location TEXT,source TEXT DEFAULT 'TTG update',created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(job_id) REFERENCES tracking_jobs(id) ON DELETE CASCADE)`,
 `CREATE INDEX IF NOT EXISTS idx_tracking_updates_job_created ON tracking_updates(job_id, created_at DESC)`,
 `CREATE TABLE IF NOT EXISTS carrier_shipments (id INTEGER PRIMARY KEY AUTOINCREMENT,job_id INTEGER NOT NULL,leg_type TEXT NOT NULL DEFAULT 'seller_to_forwarder',carrier TEXT NOT NULL,tracking_number TEXT NOT NULL,provider TEXT NOT NULL,last_status TEXT,last_event_code TEXT,last_event_at TEXT,last_checked_at TEXT,active INTEGER NOT NULL DEFAULT 1,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(job_id) REFERENCES tracking_jobs(id) ON DELETE CASCADE,UNIQUE(carrier, tracking_number, leg_type))`,
@@ -45,8 +50,7 @@ const SCHEMA=[
 `CREATE INDEX IF NOT EXISTS idx_client_job_links_job ON client_job_links(job_id)`,
 `CREATE TABLE IF NOT EXISTS tracking_staff_audit (id INTEGER PRIMARY KEY AUTOINCREMENT,actor_user_id TEXT NOT NULL,actor_email TEXT NOT NULL,actor_role TEXT NOT NULL,action TEXT NOT NULL,reference TEXT,summary TEXT,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
 `CREATE INDEX IF NOT EXISTS idx_tracking_staff_audit_created ON tracking_staff_audit(created_at DESC)`,
-`CREATE INDEX IF NOT EXISTS idx_tracking_staff_audit_reference ON tracking_staff_audit(reference, created_at DESC)`,
-`CREATE TABLE IF NOT EXISTS tracking_sequences (name TEXT PRIMARY KEY,current_value INTEGER NOT NULL DEFAULT 0,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`
+`CREATE INDEX IF NOT EXISTS idx_tracking_staff_audit_reference ON tracking_staff_audit(reference, created_at DESC)`
 ];
 
 export async function verifyTrackingSchema(db){
@@ -54,7 +58,18 @@ export async function verifyTrackingSchema(db){
   const names=new Set(rows.map(r=>r.name));
   const tables=Object.fromEntries(REQUIRED.map(name=>[name,names.has(name)]));
   const missing=REQUIRED.filter(name=>!names.has(name));
-  return {ready:missing.length===0,tables,missing};
+  let missingColumns=[...REQUIRED_TRACKING_JOB_COLUMNS];
+  if(names.has('tracking_jobs')){
+    const columns=(await db.prepare(`PRAGMA table_info(tracking_jobs)`).all()).results||[];
+    const columnNames=new Set(columns.map(row=>String(row.name||'')));
+    missingColumns=REQUIRED_TRACKING_JOB_COLUMNS.filter(name=>!columnNames.has(name));
+  }
+  return {
+    ready:missing.length===0&&missingColumns.length===0,
+    tables,
+    missing,
+    missingColumns
+  };
 }
 
 export async function handleD1Bootstrap(request,env){

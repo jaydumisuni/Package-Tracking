@@ -1,76 +1,72 @@
 import assert from 'node:assert/strict';
-import {DatabaseSync} from 'node:sqlite';
-import {RESERVE_SQL,SEQUENCE_TABLE_SQL,formatMasterTransactionId,handleTransactionReserve} from '../src/transaction-reserve.js';
+import {handleTransactionReserve} from '../src/transaction-reserve.js';
 
-class D1Statement {
-  constructor(statement){this.statement=statement;this.args=[]}
-  bind(...args){this.args=args;return this}
-  async run(){return this.statement.run(...this.args)}
-  async first(){return this.statement.get(...this.args)||null}
-}
-class D1Database {
-  constructor(db){this.db=db}
-  prepare(sql){return new D1Statement(this.db.prepare(sql))}
-}
-
-const db=new DatabaseSync(':memory:');
 const originalFetch=globalThis.fetch;
 try{
-  db.exec(`CREATE TABLE tracking_jobs (master_transaction_id TEXT NOT NULL UNIQUE);`);
-  db.exec(SEQUENCE_TABLE_SQL);
-  const reserve=()=>db.prepare(RESERVE_SQL).get(new Date().toISOString()).reserved;
+  let d1Touched=false;
+  const forbiddenD1={prepare(){d1Touched=true;throw new Error('D1 allocator must not be touched')}};
+  const endpoint='https://tracking.example/api/admin/transactions/reserve';
 
-  assert.equal(reserve(),1,'empty database starts at 1');
-  assert.equal(formatMasterTransactionId(1),'TTG-TXN-000001');
-  assert.equal(reserve(),2,'second reservation increments even before a job is created');
+  const denied=await handleTransactionReserve(new Request(endpoint,{method:'POST'}),{
+    ADMIN_TOKEN:'secret',
+    TRACKING_DB:forbiddenD1
+  });
+  assert.equal(denied.status,401);
 
-  db.prepare('INSERT INTO tracking_jobs(master_transaction_id) VALUES (?)').run('TTG-TXN-000060');
-  assert.equal(reserve(),61,'sequence catches up to a higher existing transaction');
-  assert.equal(reserve(),62,'sequence remains monotonic after catch-up');
+  const missing=await handleTransactionReserve(new Request(endpoint,{
+    method:'POST',headers:{authorization:'Bearer secret'}
+  }),{
+    ADMIN_TOKEN:'secret',
+    TRACKING_DB:forbiddenD1
+  });
+  assert.equal(missing.status,503);
+  assert.equal((await missing.json()).authority,'business-core');
+  assert.equal(d1Touched,false,'missing Business Core config must not fall back to D1');
 
-  db.prepare('INSERT INTO tracking_jobs(master_transaction_id) VALUES (?)').run('TTG-TXN-ABC123');
-  assert.equal(reserve(),63,'non-numeric transaction aliases do not corrupt sequence');
-
-  const request=new Request('https://tracking.example/api/admin/transactions/reserve',{method:'POST'});
-  const denied=await handleTransactionReserve(request,{ADMIN_TOKEN:'secret',TRACKING_DB:new D1Database(db)});
-  assert.equal(denied.status,401,'reserve endpoint rejects missing bearer token');
-
-  const unavailable=await handleTransactionReserve(new Request(request.url,{method:'POST',headers:{authorization:'Bearer secret'}}),{ADMIN_TOKEN:'secret'});
-  assert.equal(unavailable.status,503,'legacy reserve endpoint rejects missing D1 binding when Business Core is not configured');
-
-  const allowed=await handleTransactionReserve(new Request(request.url,{method:'POST',headers:{authorization:'Bearer secret'}}),{ADMIN_TOKEN:'secret',TRACKING_DB:new D1Database(db)});
-  const payload=await allowed.json();
-  assert.equal(allowed.status,200);
-  assert.equal(payload.masterTransactionId,'TTG-TXN-000064','legacy compatibility path returns next D1-owned master ID');
-  assert.equal(payload.authority,'legacy-d1');
+  const incomplete=await handleTransactionReserve(new Request(endpoint,{
+    method:'POST',headers:{authorization:'Bearer secret'}
+  }),{
+    ADMIN_TOKEN:'secret',
+    BUSINESS_CORE_URL:'https://business-core.example',
+    TRACKING_DB:forbiddenD1
+  });
+  assert.equal(incomplete.status,503);
+  assert.equal((await incomplete.json()).error,'BUSINESS_CORE_CONFIGURATION_INCOMPLETE');
+  assert.equal(d1Touched,false);
 
   let coreCalls=0;
   globalThis.fetch=async(url,options)=>{
     coreCalls++;
     assert.equal(url,'https://business-core.example/v1/transactions/reserve');
-    assert.equal(options.headers.authorization,'Bearer core-secret');
+    assert.equal(options.headers.get('authorization'),'Bearer core-secret');
     const body=JSON.parse(options.body);
     assert.equal(body.source_system,'package-tracking');
+    assert.equal(body.source_reference,'tracking-reserve:retry-001');
     assert.equal(body.idempotency_key,'package-tracking:retry-001');
-    return new Response(JSON.stringify({ok:true,sequence:900,masterTransactionId:'TTG-TXN-000900',reserved:true}),{
-      status:201,headers:{'content-type':'application/json'}
-    });
+    return new Response(JSON.stringify({
+      ok:true,
+      sequence:900,
+      masterTransactionId:'TTG-TXN-000900',
+      reserved:true
+    }),{status:201,headers:{'content-type':'application/json'}});
   };
 
-  const coreRequest=new Request(request.url,{
+  const coreRequest=new Request(endpoint,{
     method:'POST',
     headers:{authorization:'Bearer secret','x-idempotency-key':'retry-001'}
   });
   const delegated=await handleTransactionReserve(coreRequest,{
     ADMIN_TOKEN:'secret',
     BUSINESS_CORE_URL:'https://business-core.example',
-    BUSINESS_CORE_TOKEN:'core-secret'
+    BUSINESS_CORE_TOKEN:'core-secret',
+    TRACKING_DB:forbiddenD1
   });
   const delegatedPayload=await delegated.json();
   assert.equal(delegated.status,200);
   assert.equal(delegatedPayload.masterTransactionId,'TTG-TXN-000900');
   assert.equal(delegatedPayload.authority,'business-core');
-  assert.equal(coreCalls,1,'configured Tracking delegates allocation exactly once');
+  assert.equal(coreCalls,1);
+  assert.equal(d1Touched,false);
 
   globalThis.fetch=async()=>new Response(JSON.stringify({ok:false,error:'postgres unavailable'}),{
     status:503,headers:{'content-type':'application/json'}
@@ -79,14 +75,22 @@ try{
     ADMIN_TOKEN:'secret',
     BUSINESS_CORE_URL:'https://business-core.example',
     BUSINESS_CORE_TOKEN:'core-secret',
-    TRACKING_DB:new D1Database(db)
+    TRACKING_DB:forbiddenD1
   });
-  assert.equal(coreDown.status,503,'Business Core failure does not fall back to D1 and create split authority');
-  const coreDownPayload=await coreDown.json();
-  assert.equal(coreDownPayload.authority,'business-core');
+  assert.equal(coreDown.status,503);
+  assert.equal((await coreDown.json()).authority,'business-core');
+  assert.equal(d1Touched,false,'Business Core outage must never trigger legacy D1 allocation');
 
-  console.log(JSON.stringify({ok:true,checks:15,lastLegacyReserved:64},null,2));
+  console.log(JSON.stringify({
+    ok:true,
+    checks:[
+      'reserve.auth',
+      'reserve.core-required',
+      'reserve.partial-config-fails-closed',
+      'reserve.delegates-once',
+      'reserve.no-d1-fallback'
+    ]
+  },null,2));
 } finally {
   globalThis.fetch=originalFetch;
-  db.close();
 }
