@@ -68,3 +68,18 @@ Hunter can later take over the same admin/API contract when maintenance is compl
 ## Source-recovery rule
 
 GitHub source, deployed Worker behavior, D1 migrations, and frontend route expectations must stay aligned. If documentation/frontend references a route that the committed Worker does not expose, treat it as an implementation/recovery mismatch rather than assuming the route is safely reproduced from GitHub.
+
+
+## Business Core authority adapter
+
+Package Tracking keeps D1 tracking truth but delegates universal master transaction authority to TTG Business Core.
+
+When Business Core is active, transaction start/upsert follows:
+
+`Business Core master/reference preflight → D1 tracking commit → Business Core tracking-reference registration`.
+
+Business Core failures before D1 commit leave D1 untouched. A reference-registration failure after D1 commit returns `d1Committed: true` so the caller can retry without guessing whether Tracking saved the job.
+
+Legacy D1 transaction allocation remains available only while Business Core authority is inactive. Once active, reserve failures do not fall back to D1.
+
+See `docs/BUSINESS_CORE_AUTHORITY_MIGRATION.md`.

@@ -44,6 +44,19 @@ try{
   assert.equal(payload.masterTransactionId,'TTG-TXN-000064','legacy compatibility path returns next D1-owned master ID');
   assert.equal(payload.authority,'legacy-d1');
 
+  const beforeRequiredOnly=db.prepare('SELECT current_value FROM tracking_sequences WHERE name=?').get('transaction').current_value;
+  const requiredOnly=await handleTransactionReserve(new Request(request.url,{method:'POST',headers:{authorization:'Bearer secret'}}),{
+    ADMIN_TOKEN:'secret',
+    BUSINESS_CORE_REQUIRED:'true',
+    TRACKING_DB:new D1Database(db)
+  });
+  assert.equal(requiredOnly.status,503,'required Business Core configuration fails closed when URL/token are incomplete');
+  const requiredOnlyPayload=await requiredOnly.json();
+  assert.equal(requiredOnlyPayload.authority,'business-core');
+  assert.equal(requiredOnlyPayload.d1Committed,false);
+  const afterRequiredOnly=db.prepare('SELECT current_value FROM tracking_sequences WHERE name=?').get('transaction').current_value;
+  assert.equal(afterRequiredOnly,beforeRequiredOnly,'incomplete Business Core configuration must not advance the D1 allocator');
+
   let coreCalls=0;
   globalThis.fetch=async(url,options)=>{
     coreCalls++;
@@ -85,7 +98,7 @@ try{
   const coreDownPayload=await coreDown.json();
   assert.equal(coreDownPayload.authority,'business-core');
 
-  console.log(JSON.stringify({ok:true,checks:15,lastLegacyReserved:64},null,2));
+  console.log(JSON.stringify({ok:true,checks:19,lastLegacyReserved:64},null,2));
 } finally {
   globalThis.fetch=originalFetch;
   db.close();

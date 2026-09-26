@@ -1,3 +1,9 @@
+import {
+  businessCoreAuthorityActive,
+  businessCoreErrorResponse,
+  preflightTrackingAuthority,
+  registerTrackingReferences
+} from './business-core.js';
 const H={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
 const J=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:H});
 const N=value=>String(value||"").trim().toUpperCase();
@@ -62,6 +68,33 @@ async function linkPhone(db,jobId,phone){
 async function linkPhones(db,jobId,phones){
   for(const phone of phones)await linkPhone(db,jobId,phone);
 }
+function trackingReferenceContext(body,master){
+  const job=body.job||{};
+  const publicReference=N(job.publicReference||body.publicReference||master);
+  const aliases=[...(body.aliases||[])].map(N).filter(Boolean);
+  return {publicReference,aliases};
+}
+
+async function preflightLegacyD1ReferenceOwnership(db,master,{publicReference,aliases=[]}={}){
+  const refs=[publicReference,...aliases].map(N).filter(value=>value&&value!==master);
+  for(const reference of [...new Set(refs)]){
+    const row=await db.prepare(`
+      SELECT DISTINCT j.master_transaction_id
+      FROM tracking_jobs j
+      LEFT JOIN tracking_aliases a ON a.job_id=j.id
+      WHERE a.alias=?1 OR j.public_reference=?1
+      LIMIT 1
+    `).bind(reference).first();
+    if(row?.master_transaction_id&&N(row.master_transaction_id)!==master){
+      const error=new Error('LEGACY_D1_REFERENCE_COLLISION');
+      error.status=409;
+      error.code='LEGACY_D1_REFERENCE_COLLISION';
+      error.reference=reference;
+      error.existingMaster=N(row.master_transaction_id);
+      throw error;
+    }
+  }
+}
 
 async function phoneJobs(request,env){
   if(!env.TRACKING_DB)return J({found:false,error:"tracking database unavailable"},503);
@@ -109,43 +142,74 @@ async function manualLink(request,env){
 }
 
 async function upsertAndLink(request,env,ctx,core,{transactionStart=false}={}){
+  if(!await isAdmin(request,env))return J({ok:false,error:'unauthorized'},401);
   const clone=request.clone(),body=await clone.json().catch(()=>({}));
   const phones=collectPhones(body);
   const job=body.job||{};
   const master=N(job.masterTransactionId||body.masterTransactionId);
-  if(transactionStart&&!master)return J({ok:false,error:"masterTransactionId required at transaction start"},400);
+  const authorityActive=businessCoreAuthorityActive(env);
+  if(transactionStart&&!master)return J({ok:false,error:'masterTransactionId required at transaction start'},400);
+  if(authorityActive&&!master)return J({ok:false,error:'masterTransactionId required under Business Core authority',authority:'business-core'},400);
+
+  const referenceContext=trackingReferenceContext(body,master);
+  if(authorityActive){
+    try{
+      await preflightTrackingAuthority(env,master,referenceContext);
+      await preflightLegacyD1ReferenceOwnership(env.TRACKING_DB,master,referenceContext);
+    }catch(error){
+      console.error('business core tracking preflight failed',String(error));
+      const failure=businessCoreErrorResponse(error,{d1Committed:false});
+      return J(failure.body,failure.status);
+    }
+  }
 
   const response=await core.fetch(request,env,ctx);
   if(!response.ok||!env.TRACKING_DB)return response;
 
   const payload=await response.clone().json().catch(()=>null);
-  const jobId=payload?.id||await resolveJobId(env.TRACKING_DB,master||job.publicReference||body.publicReference||"");
+  const jobId=payload?.id||await resolveJobId(env.TRACKING_DB,master||job.publicReference||body.publicReference||'');
   if(!jobId)return response;
 
+  const data=payload||{ok:true};
   if(!phones.length){
-    const data=payload||{ok:true};
     data.phoneLinked=false;
     data.phoneCount=0;
-    data.phoneLinkWarning="No client/contact phone was supplied with this transaction. ID tracking still works, but phone lookup will not.";
-    return J(data,response.status);
+    data.phoneLinkWarning='No client/contact phone was supplied with this transaction. ID tracking still works, but phone lookup will not.';
+  }else{
+    try{
+      await linkPhones(env.TRACKING_DB,jobId,phones);
+      data.phoneLinked=true;
+      data.phones=phones.map(maskPhone);
+      data.phoneCount=phones.length;
+    }catch(error){
+      console.error('job saved but phone links failed',String(error));
+      data.phoneLinked=false;
+      data.phoneLinkWarning='phone lookup migration is not applied';
+    }
   }
 
-  try{await linkPhones(env.TRACKING_DB,jobId,phones)}
-  catch(error){
-    console.error("job saved but phone links failed",String(error));
-    const data=payload||{ok:true};
-    data.phoneLinked=false;
-    data.phoneLinkWarning="phone lookup migration is not applied";
-    return J(data,response.status);
+  if(authorityActive){
+    try{
+      const registered=await registerTrackingReferences(env,master,{
+        jobId,
+        publicReference:referenceContext.publicReference,
+        aliases:referenceContext.aliases
+      });
+      data.businessCoreAuthority=true;
+      data.businessCoreReferencesBound=registered.bound.length;
+    }catch(error){
+      console.error('tracking job committed but business core reference registration failed',String(error));
+      const failure=businessCoreErrorResponse(error,{d1Committed:true});
+      return J({
+        ...failure.body,
+        masterTransactionId:master,
+        jobId
+      },failure.status);
+    }
   }
 
-  const data=payload||{ok:true};
-  data.phoneLinked=true;
-  data.phones=phones.map(maskPhone);
-  data.phoneCount=phones.length;
   return J(data,response.status);
 }
-
 async function transactionStart(request,env,ctx,core){
   if(!await isAdmin(request,env))return J({ok:false,error:"unauthorized"},401);
   if(!env.TRACKING_DB)return J({ok:false,error:"TRACKING_DB is not bound"},503);
