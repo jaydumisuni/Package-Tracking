@@ -8,7 +8,7 @@ The Worker serves both the static tracking UI and API routes.
 - `GET /api/track?id=TTG-...` -> public D1 tracking lookup
 - `GET /api/client-jobs?phone=...` -> D1 phone lookup for active jobs
 - `POST /api/maya` -> tracking-scoped Maya response
-- `POST /api/admin/transactions/reserve` -> atomically reserve the next D1-owned master `TTG-TXN-*` ID
+- `POST /api/admin/transactions/reserve` -> delegate universal `TTG-TXN-*` reservation to Business Core
 - `POST /api/admin/transactions/start` -> canonical transaction-start endpoint: create/update the D1 job, aliases and all supplied client/contact phone links
 - `POST /api/admin/jobs/upsert` -> lower-level tracking-job upsert; also links supplied phone fields
 - `POST /api/admin/jobs/update` -> append a TTG tracking note/stage
@@ -43,7 +43,9 @@ A new trackable workflow that does not already have a master transaction must ca
 
 before assigning its public document aliases.
 
-The reservation is owned by D1. `tracking_sequences` keeps a monotonic transaction sequence and also catches up to any higher numeric `TTG-TXN-*` already present in `tracking_jobs`. A reservation is never manufactured in a browser, local document app, Hunter prompt, or Git repository.
+The reservation is owned by Business Core PostgreSQL. Tracking does not mint the universal `TTG-TXN-*` namespace and does not fall back to D1 if Business Core is unavailable or not configured.
+
+`BUSINESS_CORE_URL` and `BUSINESS_CORE_TOKEN` must both be configured before either admin or Document Operations reservation can succeed. A reservation is never manufactured in a browser, local document app, Hunter prompt, Git repository, or Tracking D1.
 
 Synthetic response shape:
 
@@ -59,6 +61,27 @@ Synthetic response shape:
 Reserved IDs are not recycled if a later document workflow is cancelled. Gaps are acceptable; duplicate transaction identity is not.
 
 An existing transaction must reuse its current master ID and must not reserve a second ID for another quote, invoice, receipt, disclaimer or later tracking stage.
+
+
+
+### Business Core verification and reference binding
+
+Tracking job creation is not a second identity authority.
+
+Before `/api/admin/transactions/start` or `/api/admin/jobs/upsert` writes a D1 job, Tracking verifies the supplied `masterTransactionId` through Business Core `GET /v1/transactions/:id`.
+
+After the D1 job exists, Tracking binds:
+
+- `domain=tracking`, `reference_type=job_id`, `reference_value=<D1 job id>`
+- `domain=tracking`, `reference_type=public_reference`, `reference_value=<public reference>` when the public reference differs from the master transaction
+
+through Business Core `POST /v1/transactions/:id/references`.
+
+Those relationships are linkage only. D1 remains authoritative for tracking stage, tracking history, carrier facts and public tracking presentation.
+
+If D1 persistence succeeds but Business Core relationship binding fails, the response is a recoverable failure with `trackingSaved: true`. Retrying the same start/upsert is safe because the D1 upsert and Business Core reference binding are both idempotent.
+
+Historical deployed D1 databases may still contain `tracking_sequences`. It is no longer a runtime authority, is not used by reservation code, and is omitted from fresh schema/bootstrap.
 
 ## Transaction start — canonical creation flow
 

@@ -1,3 +1,4 @@
+import {bindTrackingReferences,businessCoreConfigured,businessCoreConfigurationPresent,verifyBusinessCoreTransaction} from './business-core.js';
 const H={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
 const J=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:H});
 const N=value=>String(value||"").trim().toUpperCase();
@@ -108,12 +109,29 @@ async function manualLink(request,env){
   return J({ok:true,reference,phones:phones.map(maskPhone),count:phones.length});
 }
 
-async function upsertAndLink(request,env,ctx,core,{transactionStart=false}={}){
+async function upsertAndLink(request,env,ctx,core,{transactionStart=false,requireBusinessCore=false}={}){
   const clone=request.clone(),body=await clone.json().catch(()=>({}));
   const phones=collectPhones(body);
   const job=body.job||{};
   const master=N(job.masterTransactionId||body.masterTransactionId);
-  if(transactionStart&&!master)return J({ok:false,error:"masterTransactionId required at transaction start"},400);
+  if((transactionStart||requireBusinessCore)&&!await isAdmin(request,env))return J({ok:false,error:"unauthorized"},401);
+  if((transactionStart||requireBusinessCore)&&!master)return J({ok:false,error:"masterTransactionId required"},400);
+
+  if(requireBusinessCore){
+    if(!businessCoreConfigured(env)){
+      const error=businessCoreConfigurationPresent(env)
+        ? "BUSINESS_CORE_CONFIGURATION_INCOMPLETE"
+        : "BUSINESS_CORE_CONFIGURATION_REQUIRED";
+      return J({ok:false,error,authority:"business-core"},503);
+    }
+    try{
+      await verifyBusinessCoreTransaction(env,master);
+    }catch(error){
+      console.error("business core transaction verification failed",String(error));
+      const status=[400,404,409].includes(Number(error?.status))?Number(error.status):503;
+      return J({ok:false,error:error?.message||"BUSINESS_CORE_TRANSACTION_VERIFY_FAILED",authority:"business-core"},status);
+    }
+  }
 
   const response=await core.fetch(request,env,ctx);
   if(!response.ok||!env.TRACKING_DB)return response;
@@ -122,8 +140,32 @@ async function upsertAndLink(request,env,ctx,core,{transactionStart=false}={}){
   const jobId=payload?.id||await resolveJobId(env.TRACKING_DB,master||job.publicReference||body.publicReference||"");
   if(!jobId)return response;
 
+  const data=payload||{ok:true};
+  if(requireBusinessCore){
+    try{
+      const references=await bindTrackingReferences(env,{
+        masterTransactionId:master,
+        jobId,
+        publicReference:N(job.publicReference||body.publicReference||master)
+      });
+      data.businessCoreLinked=true;
+      data.businessCoreReferenceCount=references.length;
+      data.authority="business-core";
+    }catch(error){
+      console.error("tracking job saved but Business Core reference binding failed",String(error));
+      const status=[400,404,409].includes(Number(error?.status))?Number(error.status):503;
+      return J({
+        ok:false,
+        error:error?.message||"BUSINESS_CORE_REFERENCE_BIND_FAILED",
+        authority:"business-core",
+        trackingSaved:true,
+        masterTransactionId:master,
+        jobId
+      },status);
+    }
+  }
+
   if(!phones.length){
-    const data=payload||{ok:true};
     data.phoneLinked=false;
     data.phoneCount=0;
     data.phoneLinkWarning="No client/contact phone was supplied with this transaction. ID tracking still works, but phone lookup will not.";
@@ -139,7 +181,6 @@ async function upsertAndLink(request,env,ctx,core,{transactionStart=false}={}){
     return J(data,response.status);
   }
 
-  const data=payload||{ok:true};
   data.phoneLinked=true;
   data.phones=phones.map(maskPhone);
   data.phoneCount=phones.length;
@@ -161,7 +202,7 @@ async function transactionStart(request,env,ctx,core){
     headers:request.headers,
     body:JSON.stringify(normalizedBody)
   });
-  return upsertAndLink(coreRequest,env,ctx,core,{transactionStart:true});
+  return upsertAndLink(coreRequest,env,ctx,core,{transactionStart:true,requireBusinessCore:true});
 }
 
 export async function handleClientLookup(request,env,ctx,core){
@@ -169,6 +210,6 @@ export async function handleClientLookup(request,env,ctx,core){
   if(url.pathname==="/api/client-jobs"&&request.method==="GET")return phoneJobs(request,env);
   if(url.pathname==="/api/admin/client-phone/link"&&request.method==="POST")return manualLink(request,env);
   if(url.pathname==="/api/admin/transactions/start"&&request.method==="POST")return transactionStart(request,env,ctx,core);
-  if(url.pathname==="/api/admin/jobs/upsert"&&request.method==="POST")return upsertAndLink(request,env,ctx,core);
+  if(url.pathname==="/api/admin/jobs/upsert"&&request.method==="POST")return upsertAndLink(request,env,ctx,core,{requireBusinessCore:true});
   return null;
 }

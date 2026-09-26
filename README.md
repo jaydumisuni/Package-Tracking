@@ -25,7 +25,7 @@ Public tracking uses TTG references only. Supplier and carrier tracking numbers 
 - phone-number lookup when the client phone is linked to the D1 job
 - `POST /api/maya` — tracking-scoped Maya assistance
 - authenticated admin endpoints — reserve master transaction IDs, create/update jobs, notes and private carrier links
-- document/Hunter workflows reserve or reuse one D1-owned master transaction for trackable jobs
+- document/Hunter workflows reserve or reuse one Business Core-owned master transaction for trackable jobs
 - scheduled carrier sync — checks active carrier links when provider credentials are configured
 
 The first carrier leg can represent seller → shipping company/forwarder. For that leg, the public TTG stage remains `seller_shipped` while the parcel is moving through the seller's carrier; when the carrier reports delivery to the shipping company/forwarder, TTG can advance automatically to `shipping_company_received`.
@@ -68,3 +68,20 @@ Hunter can later take over the same admin/API contract when maintenance is compl
 ## Source-recovery rule
 
 GitHub source, deployed Worker behavior, D1 migrations, and frontend route expectations must stay aligned. If documentation/frontend references a route that the committed Worker does not expose, treat it as an implementation/recovery mismatch rather than assuming the route is safely reproduced from GitHub.
+
+
+## Business Core transaction authority
+
+Package Tracking remains authoritative for D1 tracking stages, customer tracking presentation, carrier legs and tracking-specific contact links.
+
+It no longer owns the universal `TTG-TXN-*` allocator.
+
+After this migration:
+
+- `/api/admin/transactions/reserve` and `/api/ops/transactions/reserve` require Business Core and never fall back to D1 allocation.
+- `/api/admin/transactions/start` and `/api/admin/jobs/upsert` verify the supplied master transaction in Business Core before saving the D1 job.
+- after the D1 job exists, Tracking registers immutable `tracking/job_id` and, when distinct, `tracking/public_reference` relationships in Business Core.
+- if Business Core relationship registration fails after the D1 save, the API reports a recoverable partial-sync failure and does not claim transaction-start success.
+- Business Core linkage never manufactures tracking stage, payment, shipping or carrier truth.
+
+Existing production D1 databases may still contain the historical `tracking_sequences` table. Runtime code no longer reads or increments it, and fresh schema/bootstrap no longer creates it.
