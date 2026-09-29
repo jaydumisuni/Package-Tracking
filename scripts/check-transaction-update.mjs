@@ -83,10 +83,19 @@ try{
     {ADMIN_TOKEN:"test-token",TRACKING_DB:d1}
   );
   assert.equal(allowed.status,200);
+
   const shipping=db.prepare("SELECT current_stage,shipping_cost_status,shipping_cost_amount FROM tracking_jobs WHERE id=1").get();
   assert.equal(shipping.current_stage,"shipping_cost_paid");
   assert.equal(shipping.shipping_cost_status,"paid");
   assert.equal(shipping.shipping_cost_amount,75);
 
-  console.log(JSON.stringify({ok:true,checks:12,contract:"tracking_transaction_update_v1"},null,2));
+  const dedicated=await handleTransactionUpdate(
+    new Request("https://tracking.example/api/admin/transactions/update",{method:"POST",body:JSON.stringify({reference:"TTG-TXN-000125",eventKey:"pay:dedicated:000125",stage:"parts_sourcing"}),headers:{"content-type":"application/json","x-ttg-tracking-secret":"pay-secret"}}),
+    {TTG_TRACKING_AUTOMATION_TOKEN:"pay-secret",TRACKING_DB:d1}
+  );
+  assert.equal(dedicated.status,200);
+  const afterDedicated=db.prepare("SELECT current_stage FROM tracking_jobs WHERE id=1").get();
+  assert.equal(afterDedicated.current_stage,"parts_sourcing");
+
+  console.log(JSON.stringify({ok:true,checks:13,contract:"tracking_transaction_update_v1"},null,2));
 }finally{db.close();}

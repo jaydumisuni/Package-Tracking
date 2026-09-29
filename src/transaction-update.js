@@ -1,3 +1,4 @@
+import {isTrackingAutomationAuthorized} from "./automation-auth.js";
 const H={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
 const J=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:H});
 const STAGES=new Set([
@@ -8,10 +9,6 @@ const STAGES=new Set([
 ]);
 const N=v=>String(v||"").trim().toUpperCase();
 const now=()=>new Date().toISOString();
-
-function isAdmin(request,env){
-  return Boolean(env.ADMIN_TOKEN)&&(request.headers.get("authorization")||"")===`Bearer ${env.ADMIN_TOKEN}`;
-}
 
 async function resolveJob(db,reference){
   return db.prepare(`SELECT * FROM tracking_jobs WHERE id=(
@@ -85,7 +82,7 @@ export async function updateTransaction(db,body){
 export async function handleTransactionUpdate(request,env){
   const url=new URL(request.url);
   if(url.pathname!=="/api/admin/transactions/update"||request.method!=="POST")return null;
-  if(!isAdmin(request,env))return J({ok:false,error:"unauthorized"},401);
+  if(!isTrackingAutomationAuthorized(request,env))return J({ok:false,error:"unauthorized"},401);
   if(!env.TRACKING_DB)return J({ok:false,error:"TRACKING_DB_NOT_BOUND"},503);
   const body=await request.json().catch(()=>null);
   if(!body)return J({ok:false,error:"INVALID_JSON"},400);

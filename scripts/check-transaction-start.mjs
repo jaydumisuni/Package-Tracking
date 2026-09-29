@@ -108,6 +108,12 @@ try{
   );
   assert.equal(allowed.status,200);
 
+  const dedicated=await handleTransactionStart(
+    new Request("https://tracking.example/api/admin/transactions/start",{method:"POST",body:JSON.stringify(body),headers:{"content-type":"application/json","x-ttg-tracking-secret":"pay-secret"}}),
+    {TTG_TRACKING_AUTOMATION_TOKEN:"pay-secret",TRACKING_DB:d1}
+  );
+  assert.equal(dedicated.status,200);
+
   console.log(JSON.stringify({ok:true,checks:12,masterTransactionId:first.masterTransactionId},null,2));
 }finally{
   db.close();
