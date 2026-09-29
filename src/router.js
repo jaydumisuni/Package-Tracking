@@ -10,6 +10,7 @@ import {handleOpsApi} from "./ops-api.js";
 import {handleOpsPrivate} from "./ops-private.js";
 import {handleTransactionReserve} from "./transaction-reserve.js";
 import {handleTransactionStart} from "./transaction-start.js";
+import {handleTransactionUpdate} from "./transaction-update.js";
 import {handleTransactionStart} from "./transaction-start.js";
 import {handleDocOpsReserve} from "./docops-reserve.js";
 import {ADMIN_ORIGIN} from "./admin-ops-handoff.js";
@@ -51,6 +52,7 @@ export default {
 
     const reserve=await handleTransactionReserve(request,env);if(reserve)return reserve;
     const start=await handleTransactionStart(request,env);if(start)return start;
+    const update=await handleTransactionUpdate(request,env);if(update)return update;
     const start=await handleTransactionStart(request,env);if(start)return start;
     const opsAuth=await handleOpsAuth(request,env);if(opsAuth)return opsAuth;
     const docOpsReserve=await handleDocOpsReserve(request,env);if(docOpsReserve)return docOpsReserve;
