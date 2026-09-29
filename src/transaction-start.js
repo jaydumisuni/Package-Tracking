@@ -92,9 +92,9 @@ export async function startTransaction(db,body){
       shipping_cost_status=CASE WHEN excluded.shipping_cost_status<>'' THEN excluded.shipping_cost_status ELSE tracking_jobs.shipping_cost_status END,
       shipping_cost_amount=COALESCE(excluded.shipping_cost_amount,tracking_jobs.shipping_cost_amount),
       shipping_cost_currency=CASE WHEN excluded.shipping_cost_currency<>'' THEN excluded.shipping_cost_currency ELSE tracking_jobs.shipping_cost_currency END,
-      current_stage=excluded.current_stage,
-      status_note=CASE WHEN excluded.status_note<>'' THEN excluded.status_note ELSE tracking_jobs.status_note END,
-      current_location=CASE WHEN excluded.current_location<>'' THEN excluded.current_location ELSE tracking_jobs.current_location END,
+      current_stage=tracking_jobs.current_stage,
+      status_note=CASE WHEN tracking_jobs.status_note IS NULL OR tracking_jobs.status_note='' THEN excluded.status_note ELSE tracking_jobs.status_note END,
+      current_location=CASE WHEN tracking_jobs.current_location IS NULL OR tracking_jobs.current_location='' THEN excluded.current_location ELSE tracking_jobs.current_location END,
       updated_at=excluded.updated_at
   `).bind(
     master,publicReference,
@@ -118,7 +118,7 @@ export async function startTransaction(db,body){
     stamp
   ).run();
 
-  const saved=await db.prepare("SELECT id FROM tracking_jobs WHERE master_transaction_id=?1").bind(master).first();
+  const saved=await db.prepare("SELECT id,current_stage FROM tracking_jobs WHERE master_transaction_id=?1").bind(master).first();
   if(!saved?.id)throw new Error("TRACKING_JOB_UPSERT_FAILED");
 
   const aliases=await ensureAliases(db,saved.id,master,publicReference,body.aliases);
@@ -135,7 +135,7 @@ export async function startTransaction(db,body){
     aliases,
     phoneCount:phones.length,
     phoneLinked:true,
-    stage,
+    stage:String(saved.current_stage||stage),
     createdAt:stamp
   };
 }
