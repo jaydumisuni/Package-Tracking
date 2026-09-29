@@ -76,7 +76,7 @@ try{
   });
   assert.equal(second.id,first.id,"same master transaction reuses one tracking job");
   const row=db.prepare("SELECT * FROM tracking_jobs WHERE master_transaction_id=?").get("TTG-TXN-000125");
-  assert.equal(row.current_stage,"deposit_received");
+  assert.equal(row.current_stage,"disclaimer_confirmed","start/upsert must not regress or advance an existing job stage");
   assert.equal(row.amount_received,250);
   assert.equal(row.order_payment_status,"paid");
   assert.equal(db.prepare("SELECT COUNT(*) AS c FROM tracking_aliases WHERE job_id=?").get(first.id).c,3);
